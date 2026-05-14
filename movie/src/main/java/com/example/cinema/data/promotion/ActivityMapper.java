@@ -1,0 +1,28 @@
+package com.example.cinema.data.promotion;
+
+import com.example.cinema.po.Activity;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
+@Mapper
+public interface ActivityMapper {
+
+    int insertActivity(Activity activity);
+
+    int insertActivityAndMovie(@Param("activityId") int activityId,@Param("movieId") List<Integer> movieId);
+
+    List<Activity> selectActivities();
+
+    List<Activity> selectActivitiesByMovie(int movieId);
+
+    Activity selectById(int id);
+
+    List<Activity> selectActivitiesWithoutMovie();
+
+    // ✅ 补上这两句救命的删除方法声明！
+    void deleteActivityMovie(@Param("activityId") int activityId);
+
+    void deleteActivity(@Param("activityId") int activityId);
+}
