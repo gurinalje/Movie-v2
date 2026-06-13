@@ -1,11 +1,16 @@
 package com.example.cinema.bl;
 
 import com.example.cinema.bl.promotion.CouponService;
+import com.example.cinema.bl.sales.PaymentService;
+import com.example.cinema.bl.sales.RefundService;
 import com.example.cinema.bl.sales.TicketService;
 import com.example.cinema.blImpl.management.hall.HallServiceForBl;
 import com.example.cinema.blImpl.management.schedule.ScheduleServiceForBl;
+import com.example.cinema.blImpl.sales.PaymentServiceImpl;
+import com.example.cinema.blImpl.sales.RefundServiceImpl;
 import com.example.cinema.blImpl.sales.TicketServiceImpl;
 import com.example.cinema.data.management.ScheduleMapper;
+import com.example.cinema.data.management.MovieMapper;
 import com.example.cinema.data.promotion.ActivityMapper;
 import com.example.cinema.data.promotion.CouponMapper;
 import com.example.cinema.data.promotion.VIPCardMapper;
@@ -25,7 +30,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -34,50 +38,48 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * TicketService 集成测试（Mock 数据库）
- * 测试 TicketServiceImpl 类的业务逻辑
+ * TicketService / PaymentService / RefundService 单元测试
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TicketServiceTest {
 
+    // ==================== Mock 依赖 ====================
+
     @Mock
     private AccountService accountService;
-
     @Mock
     private ScheduleMapper scheduleMapper;
-
     @Mock
-    private RefundPolicy refundPolicy;
-
+    private MovieMapper movieMapper;
     @Mock
     private RefundPolicyMapper refundPolicyMapper;
-
     @Mock
     private TicketMapper ticketMapper;
-
     @Mock
     private ScheduleServiceForBl scheduleService;
-
     @Mock
     private HallServiceForBl hallService;
-
     @Mock
     private CouponMapper couponMapper;
-
     @Mock
     private ActivityMapper activityMapper;
-
     @Mock
     private VIPCardMapper vipCardMapper;
-
     @Mock
     private CouponService couponService;
-
     @Mock
     private HistoryMapper historyMapper;
 
     @InjectMocks
     private TicketServiceImpl ticketService;
+
+    @InjectMocks
+    private PaymentServiceImpl paymentService;
+
+    @InjectMocks
+    private RefundServiceImpl refundService;
+
+    // ==================== 测试数据 ====================
 
     private Ticket testTicket;
     private ScheduleItem testScheduleItem;
@@ -87,7 +89,6 @@ public class TicketServiceTest {
 
     @Before
     public void setUp() {
-        // 初始化测试数据
         testTicket = new Ticket();
         testTicket.setId(1);
         testTicket.setUserId(10);
@@ -128,8 +129,6 @@ public class TicketServiceTest {
 
     @Test
     public void testAddTicketSuccess() {
-        // 测试锁座成功
-        // 第一次调用返回null（表示票不存在），第二次返回testTicket（插入后查询）
         when(ticketMapper.selectTicketByScheduleIdAndSeat(20, 5, 3)).thenReturn(null, testTicket);
         when(ticketMapper.insertTicket(any(Ticket.class))).thenReturn(1);
         when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
@@ -144,7 +143,6 @@ public class TicketServiceTest {
 
     @Test
     public void testAddTicketAlreadyLocked() {
-        // 测试锁座失败（票已被抢占）
         when(ticketMapper.selectTicketByScheduleIdAndSeat(20, 5, 3)).thenReturn(testTicket);
 
         ResponseVO response = ticketService.addTicket(testTicketForm);
@@ -156,7 +154,6 @@ public class TicketServiceTest {
 
     @Test
     public void testAddTicketMultipleSeats() {
-        // 测试多座位锁座
         SeatForm seat1 = new SeatForm();
         seat1.setColumnIndex(1);
         seat1.setRowIndex(1);
@@ -169,7 +166,6 @@ public class TicketServiceTest {
         multiSeatForm.setScheduleId(20);
         multiSeatForm.setSeats(Arrays.asList(seat1, seat2));
 
-        // 每个座位第一次检查返回null，插入后查询返回testTicket
         when(ticketMapper.selectTicketByScheduleIdAndSeat(eq(20), eq(1), eq(1))).thenReturn(null, testTicket);
         when(ticketMapper.selectTicketByScheduleIdAndSeat(eq(20), eq(2), eq(1))).thenReturn(null, testTicket);
         when(ticketMapper.insertTicket(any(Ticket.class))).thenReturn(1);
@@ -183,101 +179,10 @@ public class TicketServiceTest {
         assertTrue(response.getSuccess());
     }
 
-    // ==================== completeTicket 测试 ====================
-
-    @Test
-    public void testCompleteTicketSuccess() {
-        // 测试银行卡支付成功
-        List<Integer> ticketIds = Arrays.asList(1);
-        when(ticketMapper.selectTicketById(1)).thenReturn(testTicket);
-        when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
-        doNothing().when(ticketMapper).updateTicketState(1, 1);
-        when(activityMapper.selectActivitiesByMovie(1)).thenReturn(new ArrayList<>());
-        doNothing().when(historyMapper).insertHistory(any(HistoryItem.class));
-
-        ResponseVO response = ticketService.completeTicket(ticketIds, 0, 10);
-
-        assertNotNull(response);
-        assertTrue(response.getSuccess());
-        verify(ticketMapper, times(1)).updateTicketState(1, 1);
-    }
-
-    @Test
-    public void testCompleteTicketWithCoupon() {
-        // 测试使用优惠券支付
-        List<Integer> ticketIds = Arrays.asList(1);
-        Coupon coupon = new Coupon();
-        coupon.setId(1);
-        coupon.setStartTime(new Timestamp(System.currentTimeMillis() - 1000));
-        coupon.setEndTime(new Timestamp(System.currentTimeMillis() + 3600000));
-        coupon.setTargetAmount(30);
-        coupon.setDiscountAmount(5);
-
-        when(ticketMapper.selectTicketById(1)).thenReturn(testTicket);
-        when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
-        when(couponMapper.selectById(1)).thenReturn(coupon);
-        doNothing().when(ticketMapper).updateTicketState(1, 1);
-        when(activityMapper.selectActivitiesByMovie(1)).thenReturn(new ArrayList<>());
-        doNothing().when(historyMapper).insertHistory(any(HistoryItem.class));
-
-        ResponseVO response = ticketService.completeTicket(ticketIds, 1, 10);
-
-        assertNotNull(response);
-        assertTrue(response.getSuccess());
-    }
-
-    @Test
-    public void testCompleteTicketEmptyIds() {
-        // 测试空票ID列表
-        ResponseVO response = ticketService.completeTicket(new ArrayList<>(), 0, 10);
-
-        assertNotNull(response);
-        assertFalse(response.getSuccess());
-        assertEquals("未传入电影票ID", response.getMessage());
-    }
-
-    @Test
-    public void testCompleteTicketNullIds() {
-        // 测试null票ID列表
-        ResponseVO response = ticketService.completeTicket(null, 0, 10);
-
-        assertNotNull(response);
-        assertFalse(response.getSuccess());
-        assertEquals("未传入电影票ID", response.getMessage());
-    }
-
-    @Test
-    public void testCompleteTicketNotFound() {
-        // 测试票不存在
-        when(ticketMapper.selectTicketById(1)).thenReturn(null);
-
-        ResponseVO response = ticketService.completeTicket(Arrays.asList(1), 0, 10);
-
-        assertNotNull(response);
-        assertFalse(response.getSuccess());
-        assertEquals("找不到电影票信息", response.getMessage());
-    }
-
-    @Test
-    public void testCompleteTicketAlreadyPaid() {
-        // 测试票已支付
-        Ticket paidTicket = new Ticket();
-        paidTicket.setId(1);
-        paidTicket.setState(1);
-        when(ticketMapper.selectTicketById(1)).thenReturn(paidTicket);
-
-        ResponseVO response = ticketService.completeTicket(Arrays.asList(1), 0, 10);
-
-        assertNotNull(response);
-        assertFalse(response.getSuccess());
-        assertEquals("订单异常：该票已支付或已失效", response.getMessage());
-    }
-
     // ==================== getBySchedule 测试 ====================
 
     @Test
     public void testGetByScheduleSuccess() {
-        // 测试获取场次座位信息成功
         List<Ticket> tickets = Arrays.asList(testTicket);
         when(ticketMapper.selectTicketsBySchedule(20)).thenReturn(tickets);
         when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
@@ -292,7 +197,6 @@ public class TicketServiceTest {
 
     @Test
     public void testGetByScheduleNoTickets() {
-        // 测试获取场次座位信息（无票）
         when(ticketMapper.selectTicketsBySchedule(20)).thenReturn(new ArrayList<>());
         when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
         when(hallService.getHallById(1)).thenReturn(testHall);
@@ -307,7 +211,6 @@ public class TicketServiceTest {
 
     @Test
     public void testGetTicketByUserSuccess() {
-        // 测试获取用户票成功
         List<Ticket> tickets = Arrays.asList(testTicket);
         when(ticketMapper.selectTicketByUser(10)).thenReturn(tickets);
         when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
@@ -321,7 +224,6 @@ public class TicketServiceTest {
 
     @Test
     public void testGetTicketByUserNoTickets() {
-        // 测试获取用户票（无票）
         when(ticketMapper.selectTicketByUser(10)).thenReturn(new ArrayList<>());
 
         ResponseVO response = ticketService.getTicketByUser(10);
@@ -334,7 +236,6 @@ public class TicketServiceTest {
 
     @Test
     public void testCancelTicketSuccess() {
-        // 测试取消锁座成功
         when(ticketMapper.selectTicketById(1)).thenReturn(testTicket);
         doNothing().when(ticketMapper).deleteTicket(1);
 
@@ -347,7 +248,6 @@ public class TicketServiceTest {
 
     @Test
     public void testCancelTicketAlreadyPaid() {
-        // 测试取消已支付的票
         Ticket paidTicket = new Ticket();
         paidTicket.setId(1);
         paidTicket.setState(1);
@@ -360,14 +260,149 @@ public class TicketServiceTest {
         verify(ticketMapper, never()).deleteTicket(anyInt());
     }
 
+    // ==================== payByBankCard 测试 ====================
+
+    @Test
+    public void testPayByBankCardSuccess() {
+        when(ticketMapper.selectTicketById(1)).thenReturn(testTicket);
+        when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
+        doNothing().when(ticketMapper).updateTicketState(1, 1);
+        when(activityMapper.selectActivitiesByMovie(1)).thenReturn(new ArrayList<>());
+        doNothing().when(historyMapper).insertHistory(any(HistoryItem.class));
+
+        ResponseVO response = paymentService.payByBankCard(Arrays.asList(1), 0, 10);
+
+        assertNotNull(response);
+        assertTrue(response.getSuccess());
+        verify(ticketMapper, times(1)).updateTicketState(1, 1);
+    }
+
+    @Test
+    public void testPayByBankCardWithCoupon() {
+        Coupon coupon = new Coupon();
+        coupon.setId(1);
+        coupon.setStartTime(new Timestamp(System.currentTimeMillis() - 1000));
+        coupon.setEndTime(new Timestamp(System.currentTimeMillis() + 3600000));
+        coupon.setTargetAmount(30);
+        coupon.setDiscountAmount(5);
+
+        when(ticketMapper.selectTicketById(1)).thenReturn(testTicket);
+        when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
+        when(couponMapper.selectById(1)).thenReturn(coupon);
+        doNothing().when(ticketMapper).updateTicketState(1, 1);
+        when(activityMapper.selectActivitiesByMovie(1)).thenReturn(new ArrayList<>());
+        doNothing().when(historyMapper).insertHistory(any(HistoryItem.class));
+
+        ResponseVO response = paymentService.payByBankCard(Arrays.asList(1), 1, 10);
+
+        assertNotNull(response);
+        assertTrue(response.getSuccess());
+    }
+
+    @Test
+    public void testPayByBankCardEmptyIds() {
+        ResponseVO response = paymentService.payByBankCard(new ArrayList<>(), 0, 10);
+
+        assertNotNull(response);
+        assertFalse(response.getSuccess());
+        assertEquals("未传入电影票ID", response.getMessage());
+    }
+
+    @Test
+    public void testPayByBankCardNullIds() {
+        ResponseVO response = paymentService.payByBankCard(null, 0, 10);
+
+        assertNotNull(response);
+        assertFalse(response.getSuccess());
+        assertEquals("未传入电影票ID", response.getMessage());
+    }
+
+    @Test
+    public void testPayByBankCardNotFound() {
+        when(ticketMapper.selectTicketById(1)).thenReturn(null);
+
+        ResponseVO response = paymentService.payByBankCard(Arrays.asList(1), 0, 10);
+
+        assertNotNull(response);
+        assertFalse(response.getSuccess());
+        assertEquals("找不到电影票信息", response.getMessage());
+    }
+
+    @Test
+    public void testPayByBankCardAlreadyPaid() {
+        Ticket paidTicket = new Ticket();
+        paidTicket.setId(1);
+        paidTicket.setState(1);
+        when(ticketMapper.selectTicketById(1)).thenReturn(paidTicket);
+
+        ResponseVO response = paymentService.payByBankCard(Arrays.asList(1), 0, 10);
+
+        assertNotNull(response);
+        assertFalse(response.getSuccess());
+        assertEquals("订单异常：该票已支付或已失效", response.getMessage());
+    }
+
+    // ==================== payByVIPCard 测试 ====================
+
+    @Test
+    public void testPayByVIPCardSuccess() {
+        VIPCard vipCard = new VIPCard();
+        vipCard.setId(1);
+        vipCard.setUserId(10);
+        vipCard.setBalance(100.0);
+
+        when(ticketMapper.selectTicketById(1)).thenReturn(testTicket);
+        when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
+        when(vipCardMapper.selectCardByUserId(10)).thenReturn(vipCard);
+        doNothing().when(vipCardMapper).updateCardBalance(1, 65.0);
+        doNothing().when(ticketMapper).updateTicketState(1, 1);
+        when(activityMapper.selectActivitiesByMovie(1)).thenReturn(new ArrayList<>());
+        doNothing().when(historyMapper).insertHistory(any(HistoryItem.class));
+
+        ResponseVO response = paymentService.payByVIPCard(Arrays.asList(1), 0, 10);
+
+        assertNotNull(response);
+        assertTrue(response.getSuccess());
+    }
+
+    @Test
+    public void testPayByVIPCardInsufficientBalance() {
+        VIPCard vipCard = new VIPCard();
+        vipCard.setId(1);
+        vipCard.setUserId(10);
+        vipCard.setBalance(10.0);
+
+        when(ticketMapper.selectTicketById(1)).thenReturn(testTicket);
+        when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
+        when(vipCardMapper.selectCardByUserId(10)).thenReturn(vipCard);
+
+        ResponseVO response = paymentService.payByVIPCard(Arrays.asList(1), 0, 10);
+
+        assertNotNull(response);
+        assertFalse(response.getSuccess());
+        assertTrue(response.getMessage().contains("VIP余额不足"));
+    }
+
+    @Test
+    public void testPayByVIPCardNotFound() {
+        when(ticketMapper.selectTicketById(1)).thenReturn(testTicket);
+        when(scheduleService.getScheduleItemById(20)).thenReturn(testScheduleItem);
+        when(vipCardMapper.selectCardByUserId(10)).thenReturn(null);
+
+        ResponseVO response = paymentService.payByVIPCard(Arrays.asList(1), 0, 10);
+
+        assertNotNull(response);
+        assertFalse(response.getSuccess());
+        assertTrue(response.getMessage().contains("未找到您的VIP卡"));
+    }
+
     // ==================== getRefundInfo 测试 ====================
 
     @Test
     public void testGetRefundInfoSuccess() {
-        // 测试获取退票信息成功
         when(ticketMapper.selectRefundLimit()).thenReturn(60);
 
-        ResponseVO response = ticketService.getRefundInfo();
+        ResponseVO response = refundService.getRefundInfo();
 
         assertNotNull(response);
         assertTrue(response.getSuccess());
@@ -376,10 +411,9 @@ public class TicketServiceTest {
 
     @Test
     public void testGetRefundInfoFailure() {
-        // 测试获取退票信息失败
         when(ticketMapper.selectRefundLimit()).thenThrow(new RuntimeException("数据库错误"));
 
-        ResponseVO response = ticketService.getRefundInfo();
+        ResponseVO response = refundService.getRefundInfo();
 
         assertNotNull(response);
         assertFalse(response.getSuccess());
@@ -390,10 +424,9 @@ public class TicketServiceTest {
 
     @Test
     public void testUpdateRefundInfoSuccess() {
-        // 测试更新退票信息成功
         doNothing().when(ticketMapper).updateRefundLimit(120);
 
-        ResponseVO response = ticketService.updateRefundInfo(120);
+        ResponseVO response = refundService.updateRefundInfo(120);
 
         assertNotNull(response);
         assertTrue(response.getSuccess());
@@ -402,10 +435,9 @@ public class TicketServiceTest {
 
     @Test
     public void testUpdateRefundInfoFailure() {
-        // 测试更新退票信息失败
         doThrow(new RuntimeException("数据库错误")).when(ticketMapper).updateRefundLimit(anyInt());
 
-        ResponseVO response = ticketService.updateRefundInfo(120);
+        ResponseVO response = refundService.updateRefundInfo(120);
 
         assertNotNull(response);
         assertFalse(response.getSuccess());

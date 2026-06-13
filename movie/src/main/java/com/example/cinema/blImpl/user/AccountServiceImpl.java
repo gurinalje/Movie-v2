@@ -8,6 +8,8 @@ import com.example.cinema.po.HistoryItem;
 import com.example.cinema.vo.UserForm;
 import com.example.cinema.vo.ResponseVO;
 import com.example.cinema.vo.UserVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.*;
  */
 @Service
 public class AccountServiceImpl implements AccountService {
+    private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
     private final static String ACCOUNT_EXIST = "账号已存在";
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -49,9 +52,6 @@ public class AccountServiceImpl implements AccountService {
     public ResponseVO getHistoryByUserId(int userId){
         try{
             List<HistoryItem> list=historyMapper.getHistoryByUserId(userId);
-            /*for(HistoryItem it:list){
-                System.out.println(it.getMoney());
-            }*/
             return(ResponseVO.buildSuccess(list));
         }
         catch (Exception e){

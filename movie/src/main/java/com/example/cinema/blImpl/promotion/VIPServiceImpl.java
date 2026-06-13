@@ -11,6 +11,8 @@ import com.example.cinema.po.User;
 import com.example.cinema.po.VIPCard;
 import com.example.cinema.vo.ResponseVO;
 import com.example.cinema.vo.VIPInfoVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,8 @@ import java.util.*;
 
 @Service
 public class VIPServiceImpl implements VIPService {
+    private static final Logger logger = LoggerFactory.getLogger(VIPServiceImpl.class);
+
     @Autowired
     VIPCardMapper vipCardMapper;
     @Autowired
@@ -46,7 +50,7 @@ public class VIPServiceImpl implements VIPService {
                 history.setMoney(-25.0);
                 history.setDescription("购买会员卡");
                 historyMapper.insertHistory(history);
-            } catch (Exception e) { System.out.println("开卡流水插入失败: " + e.getMessage()); }
+            } catch (Exception e) { logger.error("开卡流水插入失败: userId={}", userId, e); }
 
             return ResponseVO.buildSuccess(vipCardMapper.selectCardById(realNewCardId));
         } catch (Exception e) {
@@ -107,7 +111,7 @@ public class VIPServiceImpl implements VIPService {
             }
             addedBalance += maxGift;
         } catch (Exception e) {
-            System.out.println("策略匹配异常，将按原价充值: " + e.getMessage());
+            logger.warn("策略匹配异常，将按原价充值: {}", e.getMessage());
         }
 
         vipCard.setBalance(vipCard.getBalance() + addedBalance);
@@ -123,7 +127,7 @@ public class VIPServiceImpl implements VIPService {
                 history.setMoney(vipCardForm.getAmount());
                 history.setDescription("会员卡充值 (实际到账 ￥" + addedBalance + ")");
                 historyMapper.insertHistory(history);
-            } catch (Exception e) { System.out.println("充值流水插入失败: " + e.getMessage()); }
+            } catch (Exception e) { logger.error("充值流水插入失败: vipId={}", vipCardForm.getVipId(), e); }
 
             return ResponseVO.buildSuccess(vipCardMapper.selectCardById(vipCardForm.getVipId()));
         } catch (Exception e) {
