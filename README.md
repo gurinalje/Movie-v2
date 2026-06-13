@@ -1,5 +1,11 @@
 # 在线电影购票系统
 
+<div align="center">
+
+**[English](README_EN.md) | [中文](README.md)**
+
+</div>
+
 **最后更新：** 2026-06-13
 
 ---
