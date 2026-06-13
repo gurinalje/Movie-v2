@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import java.util.stream.Collectors;
 /**
  * @author huwen
  * @date 2019/3/23
@@ -28,12 +29,15 @@ public class AccountServiceImpl implements AccountService {
     private AccountMapper accountMapper;
     @Autowired
     private HistoryMapper historyMapper;
+    
     @Override
     public ResponseVO registerAccount(UserForm userForm) {
-        try {//kind是账户的类型，0、1、2分别对应老板、管理员、观众
+        try {
+            // ✅ 修复：强制设置kind=2（普通用户），防止提权
             String encodedPassword = passwordEncoder.encode(userForm.getPassword());
-            accountMapper.createNewAccount(userForm.getUsername(), encodedPassword, userForm.getKind());
+            accountMapper.createNewAccount(userForm.getUsername(), encodedPassword, 2);
         } catch (Exception e) {
+            logger.error("注册失败: {}", e.getMessage(), e);
             return ResponseVO.buildFailure(ACCOUNT_EXIST);
         }
         return ResponseVO.buildSuccess();
@@ -42,12 +46,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public UserVO login(UserForm userForm) {
         User user = accountMapper.getAccountByName(userForm.getUsername());
-        //System.out.println(user.getUsername()+" "+user.getKind());
         if (null == user || !passwordEncoder.matches(userForm.getPassword(), user.getPassword())) {
             return null;
         }
         return new UserVO(user);
     }
+    
     @Override
     public ResponseVO getHistoryByUserId(int userId){
         try{
@@ -55,18 +59,18 @@ public class AccountServiceImpl implements AccountService {
             return(ResponseVO.buildSuccess(list));
         }
         catch (Exception e){
-            e.printStackTrace();
+            logger.error("获取历史记录失败: {}", e.getMessage(), e);
             return (ResponseVO.buildFailure("失败"));
         }
     }
 
     @Override
     public ResponseVO insertHistory(HistoryItem history){
-        try{//System.out.println("61!");
+        try{
             historyMapper.insertHistory(history);
             return ResponseVO.buildSuccess();
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("插入历史记录失败: {}", e.getMessage(), e);
             return (ResponseVO.buildFailure("失败"));
         }
     }
@@ -75,13 +79,13 @@ public class AccountServiceImpl implements AccountService {
     public ResponseVO getUserById(int id){
         try{
             User user=accountMapper.getAccountById(id);
-            //System.out.println(user.getUsername()+"  "+user.getPassword());
             return ResponseVO.buildSuccess(user);
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("获取用户失败: {}", e.getMessage(), e);
             return (ResponseVO.buildFailure("失败"));
         }
     }
+    
     @Override
     public ResponseVO updateUser(User user){
         try{
@@ -92,28 +96,59 @@ public class AccountServiceImpl implements AccountService {
             accountMapper.updateUser(user);
             return ResponseVO.buildSuccess();
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("更新用户失败: {}", e.getMessage(), e);
             return (ResponseVO.buildFailure("失败"));
         }
     }
+    
     @Override
     public ResponseVO getAllUser(){
         try{
             return ResponseVO.buildSuccess(accountMapper.getAllUser());
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("获取所有用户失败: {}", e.getMessage(), e);
             return (ResponseVO.buildFailure("失败"));
         }
-
     }
+    
     @Override
     public ResponseVO deleteUser(int id){
         try{
             accountMapper.deleteUser(id);
             return ResponseVO.buildSuccess();
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("删除用户失败: {}", e.getMessage(), e);
             return (ResponseVO.buildFailure("失败"));
+        }
+    }
+    
+    // ✅ 新增：获取用户VO（不包含密码）
+    @Override
+    public ResponseVO getUserVOById(int id){
+        try{
+            User user = accountMapper.getAccountById(id);
+            if (user == null) {
+                return ResponseVO.buildFailure("用户不存在");
+            }
+            return ResponseVO.buildSuccess(new UserVO(user));
+        }catch (Exception e){
+            logger.error("获取用户VO失败: {}", e.getMessage(), e);
+            return ResponseVO.buildFailure("失败");
+        }
+    }
+    
+    // ✅ 新增：获取所有用户VO（不包含密码）
+    @Override
+    public ResponseVO getAllUserVO(){
+        try{
+            List<User> users = accountMapper.getAllUser();
+            List<UserVO> userVOs = users.stream()
+                    .map(UserVO::new)
+                    .collect(Collectors.toList());
+            return ResponseVO.buildSuccess(userVOs);
+        }catch (Exception e){
+            logger.error("获取所有用户VO失败: {}", e.getMessage(), e);
+            return ResponseVO.buildFailure("失败");
         }
     }
 }

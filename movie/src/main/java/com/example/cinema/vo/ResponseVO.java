@@ -1,10 +1,14 @@
 package com.example.cinema.vo;
 
 /**
+ * 统一响应对象
+ * 
+ * ✅ 修复：添加泛型支持，提高类型安全
+ * 
  * @author fjj
  * @date 2019/3/12 5:14 PM
  */
-public class ResponseVO {
+public class ResponseVO<T> {
 
     /**
      * 调用是否成功
@@ -17,28 +21,27 @@ public class ResponseVO {
     private String message;
 
     /**
-     * 内容
+     * 内容 ✅ 使用泛型
      */
-    private Object content;
+    private T content;
 
-    public static ResponseVO buildSuccess(){
-        ResponseVO response=new ResponseVO();
+    public static <T> ResponseVO<T> buildSuccess() {
+        ResponseVO<T> response = new ResponseVO<>();
         response.setSuccess(true);
         return response;
     }
 
-    public static ResponseVO buildSuccess(Object content){
-        ResponseVO response=new ResponseVO();
+    public static <T> ResponseVO<T> buildSuccess(T content) {
+        ResponseVO<T> response = new ResponseVO<>();
         response.setContent(content);
         response.setSuccess(true);
         return response;
     }
 
-    public static ResponseVO buildFailure(String message){
-        ResponseVO response=new ResponseVO();
+    public static <T> ResponseVO<T> buildFailure(String message) {
+        ResponseVO<T> response = new ResponseVO<>();
         response.setSuccess(false);
         response.setMessage(message);
-        //System.out.println(message);
         return response;
     }
 
@@ -58,11 +61,11 @@ public class ResponseVO {
         this.message = message;
     }
 
-    public Object getContent() {
+    public T getContent() {
         return content;
     }
 
-    public void setContent(Object content) {
+    public void setContent(T content) {
         this.content = content;
     }
 }

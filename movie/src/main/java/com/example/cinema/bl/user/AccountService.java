@@ -34,4 +34,17 @@ public interface AccountService {
     public ResponseVO getAllUser();
 
     public ResponseVO deleteUser(int id);
+
+    /**
+     * ✅ 新增：获取用户VO（不包含密码）
+     * @param id 用户ID
+     * @return UserVO
+     */
+    public ResponseVO getUserVOById(int id);
+
+    /**
+     * ✅ 新增：获取所有用户VO（不包含密码）
+     * @return UserVO列表
+     */
+    public ResponseVO getAllUserVO();
 }

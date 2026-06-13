@@ -17,8 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 
+/**
+ * VIP服务实现类
+ * 
+ * ✅ 修复：使用 BigDecimal 进行所有金额计算
+ * 避免浮点精度问题
+ */
 @Service
 public class VIPServiceImpl implements VIPService {
     private static final Logger logger = LoggerFactory.getLogger(VIPServiceImpl.class);
@@ -36,8 +43,8 @@ public class VIPServiceImpl implements VIPService {
         User user = accountMapper.getAccountById(userId);
         VIPCard vipCard = new VIPCard();
         vipCard.setUserId(userId);
-        vipCard.setBalance(0);
-        vipCard.setTotal(25);
+        vipCard.setBalance(BigDecimal.ZERO);
+        vipCard.setTotal(VIPCard.PRICE); // ✅ 使用常量
         vipCard.setName(user != null ? user.getUsername() : "VIP用户");
 
         try {
@@ -47,14 +54,16 @@ public class VIPServiceImpl implements VIPService {
                 HistoryItem history = new HistoryItem();
                 history.setUserId(userId);
                 history.setKind(0);
-                history.setMoney(-25.0);
+                history.setMoney(VIPCard.PRICE.negate()); // ✅ 使用 BigDecimal
                 history.setDescription("购买会员卡");
                 historyMapper.insertHistory(history);
-            } catch (Exception e) { logger.error("开卡流水插入失败: userId={}", userId, e); }
+            } catch (Exception e) { 
+                logger.error("开卡流水插入失败: userId={}", userId, e); 
+            }
 
             return ResponseVO.buildSuccess(vipCardMapper.selectCardById(realNewCardId));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("开卡失败: userId={}", userId, e);
             return ResponseVO.buildFailure("开卡失败");
         }
     }
@@ -80,12 +89,11 @@ public class VIPServiceImpl implements VIPService {
                 }
             }
             vipInfoVO.setDescription(description);
-            // 🚀 核心修复：把从数据库查出来的真实策略对象列表传给前端！
             vipInfoVO.setStrategies(strategies);
-            vipInfoVO.setPrice(25.0);
+            vipInfoVO.setPrice(VIPCard.PRICE.doubleValue()); // ✅ 使用常量
             return ResponseVO.buildSuccess(vipInfoVO);
         } catch (Exception e) {
-            vipInfoVO.setPrice(25.0);
+            vipInfoVO.setPrice(VIPCard.PRICE.doubleValue());
             return ResponseVO.buildSuccess(vipInfoVO);
         }
     }
@@ -96,26 +104,38 @@ public class VIPServiceImpl implements VIPService {
         VIPCard vipCard = vipCardMapper.selectCardById(vipCardForm.getVipId());
         if (vipCard == null) return ResponseVO.buildFailure("会员卡不存在");
 
-        double addedBalance = vipCardForm.getAmount();
+        // ✅ 使用 BigDecimal 进行金额计算
+        BigDecimal amount = new BigDecimal(String.valueOf(vipCardForm.getAmount()));
+        BigDecimal addedBalance = amount;
+        
         try {
             List<VIPStrategy> strategies = vipCardMapper.getVIPStrategy();
-            int maxGift = 0;
+            BigDecimal maxGift = BigDecimal.ZERO;
+            
             if (strategies != null) {
                 for (VIPStrategy s : strategies) {
-                    if (s.getChargeLimit() > 0 && vipCardForm.getAmount() >= s.getChargeLimit()) {
-                        int times = (int) (vipCardForm.getAmount() / s.getChargeLimit());
-                        int gift = times * s.getGiftAmount();
-                        if (gift > maxGift) maxGift = gift;
+                    BigDecimal chargeLimit = new BigDecimal(s.getChargeLimit());
+                    if (s.getChargeLimit() > 0 && amount.compareTo(chargeLimit) >= 0) {
+                        // 计算倍数
+                        int times = amount.divide(chargeLimit, 0, BigDecimal.ROUND_DOWN).intValue();
+                        BigDecimal gift = new BigDecimal(times * s.getGiftAmount());
+                        if (gift.compareTo(maxGift) > 0) {
+                            maxGift = gift;
+                        }
                     }
                 }
             }
-            addedBalance += maxGift;
+            addedBalance = amount.add(maxGift);
         } catch (Exception e) {
             logger.warn("策略匹配异常，将按原价充值: {}", e.getMessage());
         }
 
-        vipCard.setBalance(vipCard.getBalance() + addedBalance);
-        vipCard.setTotal(vipCard.getTotal() + vipCardForm.getAmount());
+        // ✅ 使用 BigDecimal 更新余额和累计金额
+        BigDecimal newBalance = vipCard.getBalance().add(addedBalance);
+        BigDecimal newTotal = vipCard.getTotal().add(amount);
+        
+        vipCard.setBalance(newBalance);
+        vipCard.setTotal(newTotal);
 
         try {
             vipCardMapper.updateCardBalance(vipCardForm.getVipId(), vipCard.getBalance());
@@ -124,14 +144,16 @@ public class VIPServiceImpl implements VIPService {
                 HistoryItem history = new HistoryItem();
                 history.setUserId(vipCard.getUserId());
                 history.setKind(1);
-                history.setMoney(vipCardForm.getAmount());
+                history.setMoney(amount); // ✅ 使用 BigDecimal
                 history.setDescription("会员卡充值 (实际到账 ￥" + addedBalance + ")");
                 historyMapper.insertHistory(history);
-            } catch (Exception e) { logger.error("充值流水插入失败: vipId={}", vipCardForm.getVipId(), e); }
+            } catch (Exception e) { 
+                logger.error("充值流水插入失败: vipId={}", vipCardForm.getVipId(), e); 
+            }
 
             return ResponseVO.buildSuccess(vipCardMapper.selectCardById(vipCardForm.getVipId()));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("充值失败: vipId={}", vipCardForm.getVipId(), e);
             return ResponseVO.buildFailure("充值失败");
         }
     }
@@ -142,7 +164,9 @@ public class VIPServiceImpl implements VIPService {
             VIPCard vipCard = vipCardMapper.selectCardByUserId(userId);
             if (vipCard == null) return ResponseVO.buildFailure("用户卡不存在");
             return ResponseVO.buildSuccess(vipCard);
-        } catch (Exception e) { return ResponseVO.buildFailure("失败"); }
+        } catch (Exception e) { 
+            return ResponseVO.buildFailure("失败"); 
+        }
     }
 
     @Override
@@ -153,7 +177,9 @@ public class VIPServiceImpl implements VIPService {
             vip_strategy.setChargeLimit(chargeLimit);
             int VIPStrategy_ID = vipCardMapper.addVIPStrategy(vip_strategy);
             return ResponseVO.buildSuccess(vipCardMapper.selectVIPStrategyById(VIPStrategy_ID));
-        } catch (Exception e) { return ResponseVO.buildFailure("失败"); }
+        } catch (Exception e) { 
+            return ResponseVO.buildFailure("失败"); 
+        }
     }
 
     @Override
@@ -161,7 +187,9 @@ public class VIPServiceImpl implements VIPService {
         try {
             vipCardMapper.changeVIPStrategy(VIPStrategy_ID, chargeLimit, giftAmount);
             return ResponseVO.buildSuccess(vipCardMapper.selectVIPStrategyById(VIPStrategy_ID));
-        } catch (Exception e) { return ResponseVO.buildFailure("失败"); }
+        } catch (Exception e) { 
+            return ResponseVO.buildFailure("失败"); 
+        }
     }
 
     @Override
@@ -169,7 +197,9 @@ public class VIPServiceImpl implements VIPService {
         try {
             List<VIPStrategy> list = vipCardMapper.getVIPStrategy();
             return (ResponseVO.buildSuccess(list));
-        } catch (Exception e) { return ResponseVO.buildFailure("失败"); }
+        } catch (Exception e) { 
+            return ResponseVO.buildFailure("失败"); 
+        }
     }
 
     @Override
@@ -177,7 +207,9 @@ public class VIPServiceImpl implements VIPService {
         try {
             vipCardMapper.deleteVIPStrategy(VIPStrategy_ID);
             return ResponseVO.buildSuccess();
-        } catch (Exception e) { return ResponseVO.buildFailure("失败"); }
+        } catch (Exception e) { 
+            return ResponseVO.buildFailure("失败"); 
+        }
     }
 
     @Override
@@ -185,11 +217,16 @@ public class VIPServiceImpl implements VIPService {
         try {
             List<VIPCard> list1 = vipCardMapper.selectAllVip();
             List<VIPCard> list2 = new ArrayList<>();
+            BigDecimal threshold = new BigDecimal(money);
             for (VIPCard it : list1) {
-                if (it.getTotal() >= money) list2.add(it);
+                if (it.getTotal().compareTo(threshold) >= 0) {
+                    list2.add(it);
+                }
             }
             return ResponseVO.buildSuccess(list2);
-        } catch (Exception e) { return ResponseVO.buildFailure("失败"); }
+        } catch (Exception e) { 
+            return ResponseVO.buildFailure("失败"); 
+        }
     }
 
     @Override
