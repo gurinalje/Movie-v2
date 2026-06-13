@@ -47,7 +47,7 @@ const handleLogin = async () => {
     if (res.data.success) {
       ElMessage.success('登录成功！')
       localStorage.setItem('user', JSON.stringify(res.data.content))
-      if (loginForm.username === 'root') router.push('/admin')
+      if (res.data.content.kind === 1) router.push('/admin')
       else router.push('/home')
     } else {
       ElMessage.error(res.data.message || '登录失败')

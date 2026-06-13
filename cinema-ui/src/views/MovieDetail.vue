@@ -18,8 +18,13 @@
           </div>
           <div class="info-line"><span>主 演：</span><span>{{ movieInfo.starring }}</span></div>
           <div class="movie-operations">
-            <el-button type="danger" plain @click="handleLike">
-              💖 想 看 <span v-if="movieInfo.likeCount">({{ movieInfo.likeCount }})</span>
+            <el-button
+              :type="movieInfo.islike === 1 ? 'success' : 'danger'"
+              plain
+              @click="movieInfo.islike === 1 ? handleUnlike() : handleLike()"
+            >
+              {{ movieInfo.islike === 1 ? '💔 已想看' : '💖 想 看' }}
+              <span v-if="movieInfo.likeCount">({{ movieInfo.likeCount }})</span>
             </el-button>
           </div>
         </div>
@@ -116,6 +121,26 @@ const handleLike = async () => {
 
     if (res.data.success) {
       ElMessage.success('💖 已成功加入想看列表！')
+      fetchData() // 重新拉取数据，更新想看人数
+    } else {
+      ElMessage.info(res.data.message || '操作失败')
+    }
+  } catch (error) {
+    ElMessage.error('网络请求失败')
+  }
+}
+
+// 💔 取消"想看"按钮功能
+const handleUnlike = async () => {
+  const userStr = localStorage.getItem('user')
+  if (!userStr) return ElMessage.warning('请先登录后再操作！')
+
+  const user = JSON.parse(userStr)
+  try {
+    const res = await axios.post(`/api/movie/${movieInfo.value.id}/unlike?userId=${user.id}`)
+
+    if (res.data.success) {
+      ElMessage.success('💔 已取消想看')
       fetchData() // 重新拉取数据，更新想看人数
     } else {
       ElMessage.info(res.data.message || '操作失败')

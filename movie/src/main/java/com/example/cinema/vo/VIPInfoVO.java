@@ -1,6 +1,6 @@
 package com.example.cinema.vo;
 
-import com.example.cinema.po.VIP_Strategy;
+import com.example.cinema.po.VIPStrategy;
 import java.util.*;
 
 /**
@@ -11,7 +11,7 @@ public class VIPInfoVO {
     List<String> description;
 
     // 🚀 核心修复：新增真实的策略对象列表，而不是仅仅传一堆描述字符串
-    List<VIP_Strategy> strategies;
+    List<VIPStrategy> strategies;
 
     double price;
 
@@ -23,11 +23,11 @@ public class VIPInfoVO {
         this.description = description;
     }
 
-    public List<VIP_Strategy> getStrategies() {
+    public List<VIPStrategy> getStrategies() {
         return strategies;
     }
 
-    public void setStrategies(List<VIP_Strategy> strategies) {
+    public void setStrategies(List<VIPStrategy> strategies) {
         this.strategies = strategies;
     }
 

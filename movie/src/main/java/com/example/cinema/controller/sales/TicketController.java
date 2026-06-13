@@ -1,7 +1,7 @@
 package com.example.cinema.controller.sales;
 
 import com.example.cinema.bl.sales.TicketService;
-import com.example.cinema.po.historyItem;
+import com.example.cinema.po.HistoryItem;
 import com.example.cinema.vo.ResponseVO;
 import com.example.cinema.vo.TicketForm;
 import com.example.cinema.po.Ticket;
@@ -53,7 +53,7 @@ public class TicketController {
         return ticketService.cancelTicket(ticketId);
     }
     @PostMapping("insert/history")
-    public ResponseVO insertHistory(@RequestBody historyItem history){return accountService.insertHistory(history); }
+    public ResponseVO insertHistory(@RequestBody HistoryItem history){return accountService.insertHistory(history); }
 
     // 👇 新增：前端获取和保存退票设置的 API
     @GetMapping("/get/refundInfo")

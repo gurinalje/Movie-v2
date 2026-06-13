@@ -38,6 +38,26 @@
         </div>
       </el-col>
     </el-row>
+
+    <el-row :gutter="20" style="margin-top: 20px;">
+      <el-col :span="24">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>🎬 每日排片场次统计</h3>
+            <el-date-picker
+              v-model="scheduleDate"
+              type="date"
+              placeholder="选择日期"
+              value-format="YYYY-MM-DD"
+              :clearable="false"
+              @change="fetchScheduleData"
+              style="margin-left: auto;"
+            />
+          </div>
+          <div ref="scheduleChart" class="chart-box"></div>
+        </div>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
@@ -57,6 +77,8 @@ const boxOfficeChart = ref(null)
 const attendanceChart = ref(null)
 const salesTrendChart = ref(null)
 const typePreferenceChart = ref(null)
+const scheduleDate = ref(new Date().toISOString().slice(0, 10))
+const scheduleChart = ref(null)
 const charts = shallowRef({})
 
 const fetchStatisticsData = async () => {
@@ -115,6 +137,28 @@ const fetchStatisticsData = async () => {
   }
 }
 
+const fetchScheduleData = async () => {
+  try {
+    const res = await axios.get('/api/statistics/scheduleTime', { params: { date: scheduleDate.value } })
+    if (res.data.success && res.data.content) {
+      const scheduleData = res.data.content
+      if (scheduleData.length > 0) {
+        charts.value.scheduleChart.setOption({
+          xAxis: { data: scheduleData.map(item => item.name) },
+          series: [{ data: scheduleData.map(item => item.time || 0) }]
+        })
+      } else {
+        charts.value.scheduleChart.setOption({
+          xAxis: { data: [] },
+          series: [{ data: [] }]
+        })
+      }
+    }
+  } catch (error) {
+    console.error('获取排片统计数据失败', error)
+  }
+}
+
 onMounted(() => {
   // 仅设置空壳骨架，数据来了自动填满
   charts.value.boxChart = echarts.init(boxOfficeChart.value)
@@ -129,7 +173,28 @@ onMounted(() => {
   charts.value.typeChart = echarts.init(typePreferenceChart.value)
   charts.value.typeChart.setOption({ tooltip: {}, radar: { indicator: [{name:'暂无数据', max:100}] }, series: [{ type: 'radar', data: [{value:[], name:'观众类型偏好', areaStyle:{color:'rgba(35,183,229,0.5)'}}] }] })
 
+  charts.value.scheduleChart = echarts.init(scheduleChart.value)
+  charts.value.scheduleChart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    xAxis: { type: 'category', data: [], axisLabel: { rotate: 30 } },
+    yAxis: { type: 'value', name: '场次', minInterval: 1 },
+    grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+    series: [{
+      data: [],
+      type: 'bar',
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: '#f8ac59' },
+          { offset: 1, color: '#ed5565' }
+        ]),
+        borderRadius: [4, 4, 0, 0]
+      },
+      label: { show: true, position: 'top', color: '#666' }
+    }]
+  })
+
   fetchStatisticsData()
+  fetchScheduleData()
   window.addEventListener('resize', () => Object.values(charts.value).forEach(chart => chart.resize()))
 })
 </script>
@@ -141,5 +206,7 @@ onMounted(() => {
 .stat-value { font-size: 24px; font-weight: bold; }
 .chart-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 .chart-card h3 { margin: 0 0 20px 0; font-size: 16px; color: #333; border-left: 4px solid #1caf9a; padding-left: 10px; }
+.chart-header { display: flex; align-items: center; }
+.chart-header h3 { margin: 0 0 0 0; font-size: 16px; color: #333; border-left: 4px solid #1caf9a; padding-left: 10px; }
 .chart-box { height: 300px; width: 100%; }
 </style>

@@ -78,22 +78,12 @@ const dialogVisible = ref(false)
 const dialogType = ref('add')
 const hallForm = ref({})
 
-// 🚀 新增辅助方法：读取和写入本地的维护黑名单
-const getMaintenanceIds = () => JSON.parse(localStorage.getItem('hall_maintenance_ids') || '[]')
-const saveMaintenanceIds = (ids) => localStorage.setItem('hall_maintenance_ids', JSON.stringify(ids))
-
 // 1. 获取所有影厅
 const fetchHalls = async () => {
   try {
     const res = await axios.get('/api/hall/all')
     if (res.data.success) {
-      const badIds = getMaintenanceIds() // 读取本地黑名单
-
-      // 🚀 核心改动：强行用本地缓存的状态覆盖后端的 status
-      cinemaHalls.value = res.data.content.map(hall => ({
-        ...hall,
-        status: badIds.includes(hall.id) ? 0 : 1
-      }))
+      cinemaHalls.value = res.data.content
     } else {
       ElMessage.error(res.data.message || '获取列表失败')
     }
@@ -130,22 +120,6 @@ const submitHall = async () => {
 
     if (res.data.success) {
       ElMessage.success('保存成功！')
-
-      // 🚀 核心改动：如果是修改操作，保存时把状态同步到本地缓存
-      if (dialogType.value === 'edit') {
-        let badIds = getMaintenanceIds()
-        if (hallForm.value.status === 0) {
-          // 如果切到了设备维护，且黑名单里还没有它，就加进去
-          if (!badIds.includes(hallForm.value.id)) badIds.push(hallForm.value.id)
-        } else {
-          // 如果切回了正常营业，就从黑名单里剔除
-          badIds = badIds.filter(id => id !== hallForm.value.id)
-        }
-        saveMaintenanceIds(badIds)
-      } else {
-        // 注：因为是前端模拟，新增影厅默认都是正常营业。如果想新增一个坏厅，需要新增后点修改。
-      }
-
       dialogVisible.value = false
       fetchHalls()
     } else {
@@ -165,12 +139,6 @@ const handleDelete = (id) => {
 
       if (res.data.success) {
         ElMessage.success('已拆除！')
-
-        // 🚀 核心改动：删掉影厅的同时，也要把它从本地维护黑名单里清掉，防止产生垃圾数据
-        let badIds = getMaintenanceIds()
-        badIds = badIds.filter(badId => badId !== id)
-        saveMaintenanceIds(badIds)
-
         fetchHalls()
       } else {
         ElMessage.error(res.data.message || '删除失败，请检查F12报错')

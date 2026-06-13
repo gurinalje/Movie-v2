@@ -82,7 +82,7 @@ const fetchHistory = async () => {
           type: record.description || '未知交易'
         }
 
-        if (record.money < 0 || record.kind === 0 || record.kind === 2) {
+        if (record.money < 0 || record.kind === 0 || record.kind === 2 || record.kind === 3) {
           consumeRecords.value.push(item)
         } else {
           chargeRecords.value.push(item)

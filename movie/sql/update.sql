@@ -242,7 +242,7 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
-  `password` varchar(50) NOT NULL,
+  `password` varchar(128) NOT NULL,
   `kind` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_id_uindex` (`id`),
@@ -251,7 +251,7 @@ CREATE TABLE `user` (
 
 /*Data for the table `user` */
 
-insert  into `user`(`id`,`username`,`password`,`kind`) values (8,'root','123456',1),(9,'faker','111111',2),(10,'zhangsan','111222',2),(11,'111','111',2),(12,'222','222',2);
+insert  into `user`(`id`,`username`,`password`,`kind`) values (8,'root','$2b$12$qnKHAMtJBnN0PBzpg/1QrOd67dySgPPVGbpsL8rn8N8Fo8eCY3m2W',1),(9,'faker','$2b$12$FIMxCqNDHyzoavw31qlMleVg2n5DwSKTaVSRY8JR0NVD1y/4UaiUS',2),(10,'zhangsan','$2b$12$Ytd2QufMQ0H704kwi/QOoONjoShlhzQ.O37DK6NRquq9jkSy14oUm',2),(11,'111','$2b$12$52F/gDIH4odxPwr5G/3hoe3kDz/3Mk2epIjn1E7D4HLCAEjuKBATS',2),(12,'222','$2b$12$oXH21JmJS6TJpZz7vfpQju/e0xF9ArBBV5kKZWjijMmU0Szo9Xxfi',2);
 
 /*Table structure for table `vip_card` */
 

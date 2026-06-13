@@ -56,7 +56,7 @@ const user = ref(null)
 
 const isLoggedIn = computed(() => !!user.value)
 const username = computed(() => user.value?.username || '用户')
-const isAdmin = computed(() => user.value?.role === 'admin')
+const isAdmin = computed(() => user.value?.kind === 1)
 
 const updateUserInfo = () => {
   const userStr = localStorage.getItem('user')

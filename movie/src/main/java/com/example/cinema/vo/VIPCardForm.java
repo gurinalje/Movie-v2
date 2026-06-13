@@ -1,6 +1,6 @@
 package com.example.cinema.vo;
 
-import com.example.cinema.po.VIP_Strategy;
+import com.example.cinema.po.VIPStrategy;
 
 /**
  * Created by liying on 2019/4/14.
@@ -18,7 +18,7 @@ public class VIPCardForm {
     private int amount;
 
     /**
-     *VIP_Strategy
+     *VIPStrategy
      */
     private int vipStrategyId;
 

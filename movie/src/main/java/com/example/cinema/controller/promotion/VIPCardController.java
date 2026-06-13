@@ -1,6 +1,6 @@
 package com.example.cinema.controller.promotion;
 
-import com.example.cinema.po.historyItem;
+import com.example.cinema.po.HistoryItem;
 import com.example.cinema.vo.ResponseVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -38,23 +38,26 @@ public class VIPCardController {
 
     @GetMapping("/get/all/strategy")
     public ResponseVO getAllStrategy(){
-        return vipService.getAllVip_Strategy();
+        return vipService.getAllVipStrategy();
     }
 
     @PostMapping("/add/strategy")
     public ResponseVO addStrategy(@RequestParam int chargeLimit ,int giftAmount)
-    {return vipService.issueVIP_Strategy(chargeLimit,giftAmount);}
+    {return vipService.issueVIPStrategy(chargeLimit,giftAmount);}
 
     @PostMapping("/update/strategy")
     public ResponseVO updateStrategy(@RequestParam int id,int chargeLimit ,int giftAmount)
-    {return vipService.changeVIP_Strategy(id,chargeLimit,giftAmount);}
+    {return vipService.changeVIPStrategy(id,chargeLimit,giftAmount);}
 
     @PostMapping("delete/strategy")
-    public  ResponseVO deleteStrategy(@RequestParam int id){return vipService.deleteVIP_Strategy(id);}
+    public  ResponseVO deleteStrategy(@RequestParam int id){return vipService.deleteVIPStrategy(id);}
 
     @PostMapping("insert/history")
-    public ResponseVO insertHistory(@RequestBody historyItem history){return accountService.insertHistory(history); }
+    public ResponseVO insertHistory(@RequestBody HistoryItem history){return accountService.insertHistory(history); }
 
     @GetMapping("get/by/money")
     public ResponseVO getByMoney(@RequestParam int target){return vipService.getVipByMoney(target);}
+
+    @GetMapping("get/all")
+    public ResponseVO getAllVipCards(){return vipService.getAllVipCards();}
 }

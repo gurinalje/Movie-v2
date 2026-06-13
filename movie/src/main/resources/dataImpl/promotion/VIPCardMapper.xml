@@ -7,7 +7,7 @@
         values(#{userId},#{name}, #{balance},#{total})
     </insert>
 
-    <insert id="addVIP_Strategy" parameterType="com.example.cinema.po.VIP_Strategy"
+    <insert id="addVIPStrategy" parameterType="com.example.cinema.po.VIPStrategy"
             useGeneratedKeys="true" keyProperty="id">
         insert into vip_strategy(vip_strategy.charge_limit,vip_strategy.gift_amount)
         values(#{chargeLimit},#{giftAmount})
@@ -25,11 +25,11 @@
         select * from vip_card where user_id=#{userId}
     </select>
 
-    <select id="getVIP_Strategy" resultMap="VIP_Strategy">
+    <select id="getVIPStrategy" resultMap="VIPStrategy">
         select * from vip_strategy
     </select>
 
-    <select id="selectVIP_StrategyById" resultMap="VIP_Strategy">
+    <select id="selectVIPStrategyById" resultMap="VIPStrategy">
         select * from vip_strategy where id=#{id}
     </select>
 
@@ -42,7 +42,7 @@
         <result column="total" property="total"></result>
     </resultMap>
 
-    <resultMap id="VIP_Strategy" type="com.example.cinema.po.VIP_Strategy">
+    <resultMap id="VIPStrategy" type="com.example.cinema.po.VIPStrategy">
         <result column="id" property="id"></result>
         <result column="charge_limit" property="chargeLimit"></result>
         <result column="gift_amount" property="giftAmount"></result>
@@ -56,12 +56,12 @@
         update vip_card set total = #{total} where id=#{id}
     </update>
 
-    <update id="changeVIP_Strategy">
+    <update id="changeVIPStrategy">
         update vip_strategy set charge_limit=#{chargeLimit},gift_amount=#{giftAmount}
-        where id=#{VIP_Strategy_ID}
+        where id=#{vipStrategyId}
     </update>
 
-    <delete id="deleteVIP_Strategy">
-        delete from vip_strategy where id=#{VIP_Strategy_ID}
+    <delete id="deleteVIPStrategy">
+        delete from vip_strategy where id=#{vipStrategyId}
     </delete>
 </mapper>

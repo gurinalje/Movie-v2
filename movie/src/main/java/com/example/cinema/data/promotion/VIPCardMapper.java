@@ -1,7 +1,7 @@
 package com.example.cinema.data.promotion;
 
 import com.example.cinema.po.VIPCard;
-import com.example.cinema.po.VIP_Strategy;
+import com.example.cinema.po.VIPStrategy;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.*;
@@ -22,15 +22,15 @@ public interface VIPCardMapper {
 
     VIPCard selectCardByUserId(int userId);
 
-    VIP_Strategy selectVIP_StrategyById(int id);
+    VIPStrategy selectVIPStrategyById(int id);
 
-    int addVIP_Strategy(VIP_Strategy vip_strategy);
+    int addVIPStrategy(VIPStrategy vip_strategy);
 
-    void changeVIP_Strategy(int VIP_Strategy_ID, int chargeLimit, int giftAmount);
+    void changeVIPStrategy(@Param("vipStrategyId") int vipStrategyId, @Param("chargeLimit") int chargeLimit, @Param("giftAmount") int giftAmount);
 
-    List<VIP_Strategy> getVIP_Strategy();
+    List<VIPStrategy> getVIPStrategy();
 
-    void deleteVIP_Strategy(int VIP_Strategy_ID);
+    void deleteVIPStrategy(@Param("vipStrategyId") int vipStrategyId);
 
     List<VIPCard> selectAllVip();
 }

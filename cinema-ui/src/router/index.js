@@ -83,6 +83,11 @@ const router = createRouter({
           path: 'ticket',
           name: 'adminTicket',
           component: () => import('../views/AdminTicket.vue')
+        },
+        {
+          path: 'coupon',
+          name: 'adminCoupon',
+          component: () => import('../views/AdminCoupon.vue')
         }
       ]
     }

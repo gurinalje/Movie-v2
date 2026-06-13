@@ -59,8 +59,46 @@
 
       <div v-if="activeStep === 1" class="step-content pay-step" style="text-align: center; padding: 40px;">
         <h2>请选择支付方式</h2>
-        <p style="color: #666; margin-bottom: 30px;">锁定 {{ selectedSeats.length }} 个座位，请尽快付款。<br>总额：<span style="color: #ed5565; font-size: 24px; font-weight: bold;">￥{{ totalFare.toFixed(2) }}</span></p>
-        <div style="display: flex; justify-content: center; gap: 30px;">
+        <p style="color: #666; margin-bottom: 20px;">锁定 {{ selectedSeats.length }} 个座位，请尽快付款。</p>
+
+        <!-- 费用明细 -->
+        <div class="price-summary">
+          <div class="price-row">
+            <span>原价（{{ selectedSeats.length }} 张 × ￥{{ (scheduleInfo.fare || 0).toFixed(2) }}）</span>
+            <span>￥{{ totalFare.toFixed(2) }}</span>
+          </div>
+          <div v-if="selectedCoupon" class="price-row discount">
+            <span>优惠券抵扣（{{ selectedCoupon.name }}）</span>
+            <span style="color: #1caf9a;">-￥{{ selectedCoupon.discountAmount.toFixed(2) }}</span>
+          </div>
+          <div class="price-row total">
+            <span>应付金额</span>
+            <span style="color: #ed5565; font-size: 24px; font-weight: bold;">￥{{ finalPrice.toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <!-- 优惠券选择 -->
+        <div v-if="availableCoupons.length > 0" class="coupon-section">
+          <h3 style="margin: 20px 0 10px; text-align: left;">🎫 使用优惠券</h3>
+          <el-radio-group v-model="selectedCouponId" class="coupon-radio-group">
+            <div v-for="coupon in availableCoupons" :key="coupon.id" class="coupon-card" :class="{ 'coupon-active': selectedCouponId === coupon.id, 'coupon-disabled': totalFare < coupon.targetAmount }">
+              <el-radio :value="coupon.id" :disabled="totalFare < coupon.targetAmount">
+                <div class="coupon-info">
+                  <div class="coupon-name">{{ coupon.name }}</div>
+                  <div class="coupon-desc">{{ coupon.description }}</div>
+                  <div class="coupon-condition">
+                    满 ￥{{ coupon.targetAmount.toFixed(0) }} 减 ￥{{ coupon.discountAmount.toFixed(0) }}
+                    <el-tag v-if="totalFare < coupon.targetAmount" type="info" size="small" style="margin-left: 8px;">未满门槛</el-tag>
+                  </div>
+                </div>
+              </el-radio>
+            </div>
+          </el-radio-group>
+        </div>
+        <div v-else-if="couponsLoaded" style="color: #999; font-size: 14px; margin: 15px 0;">暂无可用优惠券</div>
+
+        <!-- 支付按钮 -->
+        <div style="display: flex; justify-content: center; gap: 30px; margin-top: 30px;">
           <el-button type="success" size="large" @click="bankCardDialogVisible = true">💳 银行卡支付</el-button>
           <el-button color="#f7d393" size="large" @click="handlePay(true)" style="color: #333;">👑 VIP 余额支付</el-button>
         </div>
@@ -118,6 +156,32 @@ const bankCardForm = reactive({ account: '', password: '' })
 const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
 const username = currentUser.username || '用户'
 
+const coupons = ref([])
+const couponsLoaded = ref(false)
+const selectedCouponId = ref(0)
+const selectedCoupon = computed(() => coupons.value.find(c => c.id === selectedCouponId.value) || null)
+
+// 可用优惠券：未过期 + 满足门槛条件（门槛 <= 总价的显示出来，未达门槛的灰显）
+const availableCoupons = computed(() => coupons.value.filter(c => {
+  return totalFare.value >= c.targetAmount
+}))
+
+const finalPrice = computed(() => {
+  const discount = selectedCoupon.value ? selectedCoupon.value.discountAmount : 0
+  return Math.max(0, totalFare.value - discount)
+})
+
+const fetchCoupons = async () => {
+  if (!currentUser.id) return
+  try {
+    const res = await axios.get(`/api/coupon/${currentUser.id}/get`)
+    if (res.data.success) {
+      coupons.value = res.data.content || []
+    }
+  } catch (e) { /* 获取优惠券失败，静默处理 */ }
+  couponsLoaded.value = true
+}
+
 const fetchSeatData = async () => {
   try {
     const res = await axios.get(`/api/ticket/get/occupiedSeats?scheduleId=${scheduleId}`)
@@ -153,6 +217,7 @@ const confirmSeats = async () => {
     if (res.data.success) {
       const content = res.data.content
       lockedTicketIds.value = content.ticketVOList ? content.ticketVOList.map(t => t.id) : []
+      selectedCouponId.value = 0  // 重置优惠券选择
       activeStep.value = 1
     } else { ElMessage.error(res.data.message || '选座失败') }
   } catch (e) { ElMessage.error('请求异常') }
@@ -168,14 +233,17 @@ const handlePay = async (isVip) => {
   try {
     const searchParams = new URLSearchParams()
     lockedTicketIds.value.forEach(id => searchParams.append('ticketId', id))
-    searchParams.append('couponId', 0)
+    searchParams.append('couponId', selectedCouponId.value)
     if(currentUser.id) searchParams.append('userId', currentUser.id)
     const res = await axios.post(`${url}?${searchParams.toString()}`)
     if (res.data.success) activeStep.value = 2
     else ElMessage.error(res.data.message || '支付失败')
   } catch (e) { ElMessage.error('请求异常') }
 }
-onMounted(() => fetchSeatData())
+onMounted(() => {
+  fetchSeatData()
+  fetchCoupons()
+})
 </script>
 
 <style scoped>
@@ -203,4 +271,21 @@ onMounted(() => fetchSeatData())
 /* 🚀 彩色头像样式 */
 .success-avatar { border: 4px solid #f0f9ff; box-shadow: 0 4px 12px rgba(28, 175, 154, 0.2); }
 .card-shadow { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+/* 费用明细 */
+.price-summary { background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; text-align: left; }
+.price-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 14px; color: #666; }
+.price-row.discount { color: #1caf9a; }
+.price-row.total { border-top: 1px dashed #ddd; margin-top: 6px; padding-top: 10px; font-weight: bold; }
+/* 优惠券选择 */
+.coupon-section { text-align: left; }
+.coupon-radio-group { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.coupon-card { border: 1px solid #e4e7ed; border-radius: 8px; padding: 12px 16px; transition: all 0.2s; cursor: pointer; }
+.coupon-card:hover { border-color: #1caf9a; box-shadow: 0 2px 8px rgba(28, 175, 154, 0.1); }
+.coupon-card.coupon-active { border-color: #1caf9a; background: #f0faf8; }
+.coupon-card.coupon-disabled { opacity: 0.5; cursor: not-allowed; }
+.coupon-card.coupon-disabled:hover { border-color: #e4e7ed; box-shadow: none; }
+.coupon-info { line-height: 1.6; }
+.coupon-name { font-weight: bold; font-size: 15px; color: #333; }
+.coupon-desc { font-size: 13px; color: #999; margin-top: 2px; }
+.coupon-condition { font-size: 13px; color: #ed5565; margin-top: 4px; }
 </style>

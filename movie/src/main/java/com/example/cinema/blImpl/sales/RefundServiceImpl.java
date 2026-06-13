@@ -54,7 +54,7 @@ public class RefundServiceImpl implements RefundService {
             int ok = 0;
             //判断是否可以退票
             Ticket ticket = ticketMapper.selectTicketById(ticketId);
-            double rate=canD(ticket);
+            double rate=canRefund(ticket);
             if (rate!=-1.0) {
 
                 ok = 1;
@@ -72,7 +72,7 @@ public class RefundServiceImpl implements RefundService {
                 }
                 //退票记录到消费记录中
                 Ticket ticket2=ticketMapper.selectTicketById(ticketId);
-                historyItem history=new historyItem();
+                HistoryItem history=new HistoryItem();
                 history.setDescription("退票；金额："+returnBalance);
                 history.setUserId(ticket2.getUserId());
                 history.setKind(3);
@@ -141,11 +141,11 @@ public class RefundServiceImpl implements RefundService {
         }
     }
 
-    public double canD(Ticket ticket){
+    public double canRefund(Ticket ticket){
         ScheduleItem fk=scheduleMapper.selectScheduleById(ticket.getScheduleId());//获得该电影票的场次信息
         int movieId=fk.getMovieId();//System.out.println("movieId:"+movieId+"  scheduleId:"+fk.getId());
         //判断该电影在该时间段是否有退票策略
-        int check=havePolicy(movieId);//System.out.println("check="+check);
+        int check=hasValidRefundPolicy(movieId);//System.out.println("check="+check);
         if(check==0){
             return -1.0;
         }
@@ -178,7 +178,7 @@ public class RefundServiceImpl implements RefundService {
         }
 
     }
-    public int havePolicy(int movie_id){
+    public int hasValidRefundPolicy(int movie_id){
         Calendar calendar = Calendar.getInstance();
         List<RefundPolicy> list=refundPolicyMapper.getAllPolicy();
         for(RefundPolicy it:list){//拿出所有策略，看是否有该电影的且还未过期的退票策略，若有，返回该退票策略id

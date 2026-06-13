@@ -168,7 +168,7 @@ public class TicketServiceImpl implements TicketService {
 
             // 5. 🚀 强行生成账单流水，并记在正确的 UserID 头上！
             try {
-                historyItem history = new historyItem();
+                HistoryItem history = new HistoryItem();
                 history.setUserId(userId);
                 history.setKind(2); // 2代表消费购票
                 history.setMoney(-total);
@@ -250,7 +250,7 @@ public class TicketServiceImpl implements TicketService {
 
             // 7. 🚀 强行生成账单流水，并记在正确的 UserID 头上！
             try {
-                historyItem history = new historyItem();
+                HistoryItem history = new HistoryItem();
                 history.setUserId(userId);
                 history.setKind(2);
                 history.setMoney(-total);

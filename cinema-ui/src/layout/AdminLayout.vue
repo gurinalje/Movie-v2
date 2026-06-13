@@ -13,6 +13,7 @@
         <el-menu-item index="/admin/vip">👑 会员策略</el-menu-item>
         <el-menu-item index="/admin/refund">🔙 退票策略</el-menu-item>
         <el-menu-item index="/admin/ticket">🎟️ 订单管理</el-menu-item>
+        <el-menu-item index="/admin/coupon">🎫 优惠券管理</el-menu-item>
         <el-menu-item index="/admin/statistic">📈 影院统计</el-menu-item>
       </el-menu>
     </el-aside>
@@ -35,6 +36,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
 const route = useRoute()
@@ -43,7 +45,8 @@ const pageTitle = computed(() => {
   const titles = {
     '/admin/movie': '电影管理', '/admin/schedule': '排片管理', '/admin/promotion': '活动管理',
     '/admin/cinema': '影院/影厅管理', '/admin/vip': '会员充值策略', '/admin/refund': '退票策略配置', 
-    '/admin/statistic': '影院数据统计', '/admin/ticket': '订单管理'
+    '/admin/statistic': '影院数据统计', '/admin/ticket': '订单管理',
+    '/admin/coupon': '优惠券管理'
   }
   return titles[route.path] || '控制台'
 })

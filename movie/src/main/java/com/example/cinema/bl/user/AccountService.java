@@ -3,7 +3,7 @@ package com.example.cinema.bl.user;
 import com.example.cinema.vo.UserForm;
 import com.example.cinema.vo.ResponseVO;
 import com.example.cinema.vo.UserVO;
-import com.example.cinema.po.historyItem;
+import com.example.cinema.po.HistoryItem;
 import com.example.cinema.po.User;
 /**
  * @author huwen
@@ -25,7 +25,7 @@ public interface AccountService {
 
     public ResponseVO getHistoryByUserId(int userId);
 
-    public ResponseVO insertHistory(historyItem history);
+    public ResponseVO insertHistory(HistoryItem history);
 
     public ResponseVO getUserById(int id);
 

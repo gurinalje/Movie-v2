@@ -1,5 +1,24 @@
 <template>
   <div class="card">
+    <div class="view-config-bar">
+      <div class="view-config-left">
+        <span class="view-config-label">排片可见天数</span>
+        <el-input-number
+            v-model="scheduleViewDays"
+            :min="1"
+            :max="30"
+            :step="1"
+            size="default"
+            style="width: 140px;"
+            controls-position="right"
+        />
+        <span class="view-config-hint">观众可提前查看未来 {{ scheduleViewDays }} 天的排片</span>
+      </div>
+      <el-button type="success" size="default" @click="saveScheduleView" :loading="viewSaving">
+        💾 保存配置
+      </el-button>
+    </div>
+
     <div class="operation-bar">
       <el-button type="primary" size="large" @click="openAddModal">
         ➕ 新增排片
@@ -99,6 +118,10 @@ const movieList = ref([])
 const hallList = ref([])
 const scheduleList = ref([])
 
+// 排片可见天数配置
+const scheduleViewDays = ref(7)
+const viewSaving = ref(false)
+
 const today = new Date()
 const pad = n => n < 10 ? '0' + n : n
 const filterDate = ref(`${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`)
@@ -115,6 +138,36 @@ const activeHalls = computed(() => {
 // 🚀 判断某个影厅是不是坏的
 const isHallMaintaining = (id) => {
   return getMaintenanceIds().includes(id)
+}
+
+// 🚀 获取当前排片可见天数配置
+const fetchScheduleView = async () => {
+  try {
+    const res = await axios.get('/api/schedule/view')
+    if (res.data.success && res.data.content !== undefined && res.data.content !== null) {
+      scheduleViewDays.value = Number(res.data.content)
+    }
+  } catch (error) {
+    console.error('获取排片可见天数配置失败:', error)
+  }
+}
+
+// 🚀 保存排片可见天数配置
+const saveScheduleView = async () => {
+  viewSaving.value = true
+  try {
+    const res = await axios.post('/api/schedule/view/set', { day: scheduleViewDays.value })
+    if (res.data.success) {
+      ElMessage.success(`排片可见天数已更新为 ${scheduleViewDays.value} 天`)
+    } else {
+      ElMessage.error(res.data.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存排片可见天数配置失败:', error)
+    ElMessage.error('网络请求失败')
+  } finally {
+    viewSaving.value = false
+  }
 }
 
 const fetchBaseData = async () => {
@@ -158,6 +211,7 @@ const fetchSchedules = async () => {
 }
 
 onMounted(() => {
+  fetchScheduleView()
   fetchBaseData()
 })
 
@@ -257,6 +311,36 @@ const formatTime = (timeStr) => {
 .filter-area {
   display: flex;
   align-items: center;
+}
+
+.view-config-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+}
+
+.view-config-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.view-config-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0369a1;
+  white-space: nowrap;
+}
+
+.view-config-hint {
+  font-size: 13px;
+  color: #6b7280;
+  white-space: nowrap;
 }
 
 :deep(.el-table th.el-table__cell) {

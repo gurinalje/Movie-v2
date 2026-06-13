@@ -21,13 +21,15 @@ public interface VIPService {
 
     ResponseVO getCardByUserId(int userId);
 
-    ResponseVO issueVIP_Strategy(int chargeLimit, int giftAmount);
+    ResponseVO issueVIPStrategy(int chargeLimit, int giftAmount);
 
-    ResponseVO changeVIP_Strategy(int VIP_Strategy_ID, int chargeLimit, int giftAmount);
+    ResponseVO changeVIPStrategy(int vipStrategyId, int chargeLimit, int giftAmount);
 
-    public ResponseVO getAllVip_Strategy();
+    public ResponseVO getAllVipStrategy();
 
-    ResponseVO deleteVIP_Strategy(int VIP_Strategy_ID);
+    ResponseVO deleteVIPStrategy(int vipStrategyId);
 
     ResponseVO getVipByMoney(int money);
+
+    ResponseVO getAllVipCards();
 }

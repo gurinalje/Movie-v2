@@ -8,7 +8,7 @@ import com.example.cinema.vo.ResponseVO;
 import com.example.cinema.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.example.cinema.po.historyItem;
+import com.example.cinema.po.HistoryItem;
 import com.example.cinema.po.User;
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -51,7 +51,7 @@ public class AccountController {
     }
 
     @PostMapping("insert/history")
-    public ResponseVO insertHistory(@RequestBody historyItem history){return accountService.insertHistory(history); }
+    public ResponseVO insertHistory(@RequestBody HistoryItem history){return accountService.insertHistory(history); }
 
     @GetMapping("/get/user")
     public ResponseVO getUserById(@RequestParam int userId){return  accountService.getUserById(userId);}

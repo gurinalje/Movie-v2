@@ -4,12 +4,12 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 
 @Component
-public class historyItem {
+public class HistoryItem {
     private int id;
     private int userId;
     private int kind;
     private double money;
-    private Timestamp time; // 🚀 致命修复：首字母必须小写，否则 Vue 无法识别！
+    private Timestamp time;
     private String description;
 
     public int getId() { return id; }
