@@ -1,6 +1,6 @@
-# Movie-v2 - 在线电影购票系统
-
 <div align="center">
+
+# Movie-v2 - 在线电影购票系统
 
 ![Vue](https://img.shields.io/badge/Vue-3.5-42b883?style=flat&logo=vue.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178c6?style=flat&logo=typescript)
@@ -8,7 +8,10 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.1-6db33f?style=flat&logo=springboot)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479a1?style=flat&logo=mysql)
 
-**项目演示** | **技术文档**
+**[English](README_EN.md) | 中文**
+
+[![GitHub stars](https://img.shields.io/github/stars/gurinalje/Movie-v2?style=social)](https://github.com/gurinalje/Movie-v2/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/gurinalje/Movie-v2?style=social)](https://github.com/gurinalje/Movie-v2/network/members)
 
 </div>
 
@@ -18,9 +21,67 @@
 
 一个前后端分离的在线电影购票平台，模拟真实电影院业务场景，包含完整的用户端购票流程和管理后台运营系统。
 
-**项目周期：** 2 周  
-**个人角色：** 独立开发者  
+**项目周期：** 2 周
+**个人角色：** 独立开发者
 **项目类型：** 全栈开发（前端 + 后端 + 数据库设计）
+
+---
+
+## 项目截图
+
+### 用户端
+
+<table>
+  <tr>
+    <td align="center"><b>登录页面</b></td>
+    <td align="center"><b>首页 - 热门电影</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/login.png" width="400"></td>
+    <td><img src="assets/home.png" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>电影详情</b></td>
+    <td align="center"><b>选座购票</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/movie-detail-2.png" width="400"></td>
+    <td><img src="assets/seat-selection.png" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>支付页面</b></td>
+    <td align="center"><b>订单管理</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/payment.png" width="400"></td>
+    <td><img src="assets/order-management.png" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>VIP 会员中心</b></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="assets/vip-member.png" width="500"></td>
+  </tr>
+</table>
+
+### 管理后台
+
+<table>
+  <tr>
+    <td align="center"><b>电影管理</b></td>
+    <td align="center"><b>影厅管理</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/admin-movie.png" width="400"></td>
+    <td><img src="assets/admin-hall.png" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>数据可视化大屏</b></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="assets/admin-statistics.png" width="600"></td>
+  </tr>
+</table>
 
 ---
 
@@ -84,13 +145,13 @@
 const selectSeat = (row, col) => {
   // 1. 检查座位状态
   if (seatStatus[row][col] === 'locked') return
-  
+
   // 2. 锁定座位（防止并发）
   await lockSeat(row, col)
-  
+
   // 3. 生成订单
   const order = await createOrder({ seat: `${row}-${col}` })
-  
+
   // 4. 15分钟未支付自动释放
   startCountdown(order.id, 15 * 60)
 }
@@ -198,13 +259,25 @@ Movie-v2/
 │   └── sql/
 │       └── update.sql             # 数据库脚本
 │
-└── cinema-ui/                      # 前端 Vue 3 项目
-    └── src/
-        ├── views/                 # 页面组件
-        ├── components/            # 公共组件
-        ├── router/                # 路由配置
-        ├── stores/                # Pinia 状态
-        └── api/                   # 接口封装
+├── cinema-ui/                      # 前端 Vue 3 项目
+│   └── src/
+│       ├── views/                 # 页面组件
+│       ├── components/            # 公共组件
+│       ├── router/                # 路由配置
+│       ├── stores/                # Pinia 状态
+│       └── api/                   # 接口封装
+│
+└── assets/                         # 项目截图
+    ├── login.png
+    ├── home.png
+    ├── movie-detail-2.png
+    ├── seat-selection.png
+    ├── payment.png
+    ├── order-management.png
+    ├── vip-member.png
+    ├── admin-movie.png
+    ├── admin-hall.png
+    └── admin-statistics.png
 ```
 
 ---

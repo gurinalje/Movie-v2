@@ -1,292 +1,384 @@
-# Online Movie Ticket Booking System
-
 <div align="center">
 
-**[English](README_EN.md) | [中文](README.md)**
+# Movie-v2 - Online Cinema Ticket Booking System
+
+![Vue](https://img.shields.io/badge/Vue-3.5-42b883?style=flat&logo=vue.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178c6?style=flat&logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-5.4-646cff?style=flat&logo=vite)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.1-6db33f?style=flat&logo=springboot)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479a1?style=flat&logo=mysql)
+
+English | **[中文](README.md)**
+
+[![GitHub stars](https://img.shields.io/github/stars/gurinalje/Movie-v2?style=social)](https://github.com/gurinalje/Movie-v2/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/gurinalje/Movie-v2?style=social)](https://github.com/gurinalje/Movie-v2/network/members)
 
 </div>
 
-**Last Updated:** 2026-06-13
+---
+
+## Introduction
+
+A full-stack online cinema ticket booking platform built with Vue 3 and Spring Boot, simulating real-world cinema business scenarios. Features include complete user-side ticket purchasing flow and admin management system.
+
+**Project Duration:** 2 weeks
+**Role:** Independent Developer
+**Project Type:** Full-stack Development (Frontend + Backend + Database Design)
 
 ---
 
-## Project Overview
+## Screenshots
 
-This is a full-stack online movie ticket booking platform built with **Spring Boot + Vue 3** architecture. The system serves two types of users: **regular users** (booking movies) and **administrators** (managing halls, schedules, movies, and promotions). Core features include movie browsing, online seat selection and ticket booking, membership card management, coupon distribution, refund policy configuration, and business data analytics.
+### User Side
+
+<table>
+  <tr>
+    <td align="center"><b>Login Page</b></td>
+    <td align="center"><b>Homepage - Now Showing</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/login.png" width="400"></td>
+    <td><img src="assets/home.png" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Movie Details</b></td>
+    <td align="center"><b>Seat Selection</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/movie-detail-2.png" width="400"></td>
+    <td><img src="assets/seat-selection.png" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Payment</b></td>
+    <td align="center"><b>Order Management</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/payment.png" width="400"></td>
+    <td><img src="assets/order-management.png" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>VIP Membership Center</b></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="assets/vip-member.png" width="500"></td>
+  </tr>
+</table>
+
+### Admin Panel
+
+<table>
+  <tr>
+    <td align="center"><b>Movie Management</b></td>
+    <td align="center"><b>Hall Management</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/admin-movie.png" width="400"></td>
+    <td><img src="assets/admin-hall.png" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>Data Visualization Dashboard</b></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="assets/admin-statistics.png" width="600"></td>
+  </tr>
+</table>
 
 ---
 
-## Features
+## Core Features
 
-### User Features
+### User Side
 
-| Feature | Description |
-|---------|-------------|
-| Account Management | Registration, login, logout, profile view and edit |
-| Movie Browsing | View movie list, movie details, keyword search |
-| Online Booking | Select showtime → Select seats → Lock seats → Payment (Bank Card / VIP Balance) |
-| Wishlist | Mark/unmark movies as wishlist, view wishlist trends |
-| Membership Card | Apply for card, recharge (with bonus strategies), balance consumption, transaction history |
-| Coupons | View issued coupons, use for discount when booking tickets |
-| Transaction History | View all consumption/recharge history records |
+| Feature | Implementation |
+|---------|----------------|
+| Online Seat Selection | Canvas seat algorithm + concurrent locking |
+| VIP Membership Card | Recharge strategy engine + balance payment |
+| Coupon System | Coupon issuance/redemption + discount rules |
+| Movie Search | Fuzzy search + pagination |
+| Transaction History | Multi-dimensional statistics + history query |
 
-### Admin Features
+### Admin Side
 
-| Feature | Description |
-|---------|-------------|
-| Movie Management | Add, edit, batch remove movies |
-| Schedule Management | Add/edit/batch delete schedules, configure visible schedule days |
-| Hall Management | Add, edit, delete halls (with operating status) |
-| Promotions | Publish/offline promotional activities, associate movies with coupons |
-| Coupon Management | View all coupons, issue coupons to specified users |
-| VIP Management | VIP strategy configuration (bonus rules), VIP information overview |
-| Refund Policy | Configure refund time limits and handling fees by movie |
-| Ticket Management | View all orders, configure refund time limits |
-| Data Statistics | Box office ranking, audience consumption analysis, schedule statistics, popular movies, comprehensive dashboard |
+| Feature | Implementation |
+|---------|----------------|
+| Schedule Management | Session management + time conflict detection |
+| Data Dashboard | ECharts multi-dimensional visualization |
+| Promotions | Activity configuration + coupon association |
+| Refund Policy | Per-movie refund time limits and fees |
+
+---
+
+## Technical Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Frontend (Vue 3)                       │
+├─────────────────────────────────────────────────────────────┤
+│  Vue3 Composition API + TypeScript + Vite + Element Plus    │
+│  Pinia State Management + Vue Router + ECharts              │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Backend (Spring Boot)                   │
+├─────────────────────────────────────────────────────────────┤
+│  Spring Boot + MyBatis + MySQL 8.0 + BCrypt Encryption      │
+│  Layered Architecture: Controller → Service → Mapper → DB   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                        Database (MySQL)                     │
+├─────────────────────────────────────────────────────────────┤
+│  15 Tables: user, movie, hall, schedule, ticket, vip_card... │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Project Highlights
+
+### 1. Complete Seat Selection Flow
+
+```javascript
+// Core seat selection algorithm
+const selectSeat = (row, col) => {
+  // 1. Check seat status
+  if (seatStatus[row][col] === 'locked') return
+
+  // 2. Lock seat (prevent concurrency)
+  await lockSeat(row, col)
+
+  // 3. Create order
+  const order = await createOrder({ seat: `${row}-${col}` })
+
+  // 4. Auto-release after 15 minutes if unpaid
+  startCountdown(order.id, 15 * 60)
+}
+```
+
+**Technical Challenges:**
+- Concurrent seat locking mechanism
+- Auto-release for expired orders (scheduled tasks)
+- Real-time seat status synchronization
+
+### 2. Data Visualization Dashboard
+
+Multi-dimensional data display using ECharts:
+- Box office rankings (bar chart)
+- Audience consumption trends (line chart)
+- Schedule statistics (pie chart)
+- Popular movies (radar chart)
+
+### 3. Responsive Design
+
+- Mobile device adaptation
+- Adaptive layout
+- Cross-browser compatibility (Chrome, Firefox, Safari, Edge)
 
 ---
 
 ## Tech Stack
 
-### Backend (`movie/`)
+### Frontend
 
-| Technology | Version | Description |
-|------------|---------|-------------|
-| Java | 1.8 | Programming Language |
-| Spring Boot | 2.1.3.RELEASE | Web Framework |
-| MyBatis | 1.3.2 | ORM Framework |
-| MySQL | 8.0 | Relational Database |
-| Thymeleaf | (built-in) | Template Engine (reserved) |
-| Lombok | 1.18.30 | Java Code Simplification |
-| Spring Security Crypto | (built-in) | BCrypt Password Encryption |
-| Commons FileUpload | 1.3.3 | File Upload |
-| Spring Boot Actuator | (built-in) | Application Monitoring |
-
-### Frontend (`cinema-ui/`)
-
-| Technology | Version | Description |
-|------------|---------|-------------|
-| Vue | 3.5.29 | Frontend Framework |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Vue 3 | 3.5.29 | Frontend Framework |
+| TypeScript | 5.0+ | Type-safe Development |
 | Vite | 5.4.11 | Build Tool |
-| Vue Router | 5.0.3 | Route Management |
-| Pinia | 3.0.4 | State Management |
 | Element Plus | 2.13.5 | UI Component Library |
+| Pinia | 3.0.4 | State Management |
+| ECharts | 6.0.0 | Data Visualization |
 | Axios | 1.13.6 | HTTP Client |
-| ECharts | 6.0.0 | Data Visualization Charts |
+
+### Backend
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Java | 1.8 | Programming Language |
+| Spring Boot | 2.1.3 | Web Framework |
+| MyBatis | 1.3.2 | ORM Framework |
+| MySQL | 8.0 | Database |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- JDK 1.8+
+- Maven 3.x
+- MySQL 8.0+
+- Node.js 20.19+
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/gurinalje/Movie-v2.git
+cd Movie-v2
+
+# 2. Initialize database
+mysql -u root -p < movie/sql/update.sql
+
+# 3. Configure database connection
+# Edit movie/.env file
+
+# 4. Start backend
+cd movie
+mvn spring-boot:run
+
+# 5. Start frontend
+cd cinema-ui
+npm install
+npm run dev
+```
+
+### Access the System
+
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | root | 123456 |
+| User | faker | 111111 |
+
+Access URL: http://localhost:5173
 
 ---
 
 ## Project Structure
 
 ```
-Online-Movie-Ticket-System/
-├── movie/                              # Backend Spring Boot Project
-│   ├── pom.xml                         # Maven Dependencies
-│   ├── .env                            # Environment Variables (DB config, not in repo)
-│   ├── sql/
-│   │   └── update.sql                  # Database Schema + Initial Data
-│   └── src/main/
-│       ├── java/com/example/cinema/
-│       │   ├── CinemaApplication.java  # Application Entry Point
-│       │   ├── config/
-│       │   │   └── InterceptorConfiguration.java  # Interceptor Config
-│       │   ├── interceptor/
-│       │   │   └── SessionInterceptor.java        # Login Interceptor
-│       │   ├── controller/             # ---- Controller Layer (API Entry) ----
-│       │   ├── bl/                     # ---- Business Logic Layer ----
-│       │   ├── blImpl/                 # ---- Business Logic Implementation ----
-│       │   ├── data/                   # ---- Data Access Layer (MyBatis Mapper) ----
-│       │   ├── po/                     # ---- Persistent Objects ----
-│       │   ├── vo/                     # ---- View Objects ----
-│       │   └── exception/              # ---- Custom Exceptions ----
-│       └── resources/
-│           ├── application.yml         # Application Configuration
-│           └── dataImpl/               # MyBatis XML Mapper Files
+Movie-v2/
+├── movie/                          # Backend Spring Boot Project
+│   ├── src/main/java/
+│   │   ├── controller/            # Controller Layer
+│   │   ├── service/               # Business Logic Layer
+│   │   ├── mapper/                # Data Access Layer
+│   │   └── entity/                # Entity Classes
+│   └── sql/
+│       └── update.sql             # Database Script
 │
-├── cinema-ui/                          # Frontend Vue 3 Project
-│   ├── package.json                    # Node Dependencies
-│   ├── vite.config.js                  # Vite Config (with proxy settings)
-│   ├── index.html                      # HTML Entry Point
+├── cinema-ui/                      # Frontend Vue 3 Project
 │   └── src/
-│       ├── main.js                     # Vue Application Entry
-│       ├── App.vue                     # Root Component
-│       ├── router/index.js             # Frontend Route Configuration
-│       ├── components/
-│       │   └── NavBar.vue              # Navigation Bar Component
-│       ├── layout/
-│       │   └── AdminLayout.vue         # Admin Dashboard Layout
-│       └── views/                      # ---- Page Components ----
-│           ├── Login.vue               # Login Page
-│           ├── Home.vue                # Home Page (Popular Movies)
-│           ├── Movie.vue               # Movie List
-│           ├── MovieDetail.vue         # Movie Details
-│           ├── MovieBuy.vue            # Seat Selection & Booking
-│           ├── UserBuy.vue             # User Orders
-│           ├── UserCost.vue            # Transaction History
-│           ├── UserInfo.vue            # Personal Information
-│           ├── UserMember.vue          # Membership Center
-│           ├── AdminMovie.vue          # [Admin] Movie Management
-│           ├── AdminSchedule.vue       # [Admin] Schedule Management
-│           ├── AdminCinema.vue         # [Admin] Hall Management
-│           ├── AdminPromotion.vue      # [Admin] Promotion Management
-│           ├── AdminVip.vue            # [Admin] VIP Management
-│           ├── AdminRefund.vue         # [Admin] Refund Policy
-│           ├── AdminStatistic.vue      # [Admin] Data Statistics
-│           └── AdminTicket.vue         # [Admin] Ticket Management
+│       ├── views/                 # Page Components
+│       ├── components/            # Shared Components
+│       ├── router/                # Route Configuration
+│       ├── stores/                # Pinia State
+│       └── api/                   # API Encapsulation
 │
-└── SECURITY_REVIEW_REPORT.md           # Security Review Report
+└── assets/                         # Project Screenshots
+    ├── login.png
+    ├── home.png
+    ├── movie-detail-2.png
+    ├── seat-selection.png
+    ├── payment.png
+    ├── order-management.png
+    ├── vip-member.png
+    ├── admin-movie.png
+    ├── admin-hall.png
+    └── admin-statistics.png
 ```
 
 ---
 
-## Prerequisites
+## Code Examples
 
-| Dependency | Minimum Version | Description |
-|------------|-----------------|-------------|
-| JDK | 1.8+ | Java Runtime Environment |
-| Maven | 3.x | Backend Build Tool |
-| MySQL | 8.0+ | Database |
-| Node.js | 20.19+ or 22.12+ | Frontend Runtime |
-| npm | Corresponding to Node.js | Frontend Package Manager |
+### Axios Request Encapsulation
 
----
+```typescript
+// src/api/request.ts
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
-## Getting Started
+const request = axios.create({
+  baseURL: '/api',
+  timeout: 10000
+})
 
-### 1. Initialize Database
-
-```bash
-# Login to MySQL and execute the schema script
-mysql -u root -p < movie/sql/update.sql
-```
-
-This script will automatically create the `cinema` database, all tables, and initial test data.
-
-### 2. Configure Database Connection
-
-Edit the `movie/.env` file (ensure this file is not committed to version control):
-
-```properties
-DB_URL=jdbc:mysql://localhost:3306/cinema?serverTimezone=CTT&characterEncoding=UTF-8&useSSL=false
-DB_USERNAME=root
-DB_PASSWORD=your_database_password
-```
-
-### 3. Start Backend
-
-```bash
-# Navigate to backend directory
-cd movie
-
-# Compile and start
-mvn spring-boot:run
-```
-
-Backend will run on **http://localhost:8080** by default.
-
-### 4. Start Frontend
-
-```bash
-# Navigate to frontend directory
-cd cinema-ui
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-Frontend will run on **http://localhost:5173** by default. All `/api` requests will be proxied to backend `http://localhost:8080` (the `/api` prefix will be removed).
-
-### 5. Access the System
-
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | root | 123456 |
-| User | faker | 111111 |
-| User | zhangsan | 111222 |
-
-- Visit **http://localhost:5173** to open the system homepage
-- Login with admin credentials to access the admin dashboard
-- Login with user credentials to access the user frontend
-
----
-
-## Development Guide
-
-### Frontend Development
-
-```bash
-# Start development server (with hot reload)
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-**Frontend Proxy Configuration** (`vite.config.js`):
-
-```javascript
-proxy: {
-  '/api': {
-    target: 'http://localhost:8080',  // Backend address
-    changeOrigin: true,
-    rewrite: (path) => path.replace(/^\/api/, '')  // Remove /api prefix
+// Request interceptor
+request.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
   }
-}
+)
+
+// Response interceptor
+request.interceptors.response.use(
+  response => response.data,
+  error => {
+    ElMessage.error(error.response?.data?.message || 'Request failed')
+    return Promise.reject(error)
+  }
+)
+
+export default request
 ```
 
-### Backend Development
+### Pinia State Management
 
-**Backend Layered Architecture:**
+```typescript
+// src/stores/user.ts
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import request from '@/api/request'
 
+export const useUserStore = defineStore('user', () => {
+  const userInfo = ref(null)
+  const isLoggedIn = ref(false)
+
+  const login = async (username: string, password: string) => {
+    const res = await request.post('/login', { username, password })
+    userInfo.value = res.data
+    isLoggedIn.value = true
+    localStorage.setItem('token', res.data.token)
+  }
+
+  const logout = () => {
+    userInfo.value = null
+    isLoggedIn.value = false
+    localStorage.removeItem('token')
+  }
+
+  return { userInfo, isLoggedIn, login, logout }
+})
 ```
-Controller (Controller Layer)
-    ↓ Calls
-Service Interface (Business Logic Layer)
-    ↓ Implements
-ServiceImpl (Business Logic Implementation)
-    ↓ Calls
-Mapper (Data Access Layer, MyBatis XML Mapping)
-    ↓ Operates
-MySQL Database
-```
-
-**Key Configurations:**
-
-- `application.yml` - Datasource, MyBatis mapping paths, Jackson timezone
-- `InterceptorConfiguration.java` - Login interceptor, excludes login/register/static resources
-- `SessionInterceptor.java` - HTTP Session-based login verification, returns 401 JSON if not logged in
 
 ---
 
-## Database Schema
+## Security Features
 
-| Table | Description |
-|-------|-------------|
-| `user` | User table (id, username, password, kind: 1=admin/2=user) |
-| `movie` | Movie table (name, director, cast, type, poster, etc.) |
-| `hall` | Hall table (rows, columns, seats, operating status) |
-| `schedule` | Schedule table (links hall and movie, showtime and price) |
-| `schedule_view` | Schedule visible days setting |
-| `ticket` | Order table (links user and schedule, seat info, order status) |
-| `vip_card` | Membership card table (balance and total consumption) |
-| `vip_strategy` | VIP recharge strategy (recharge X get Y bonus) |
-| `coupon` | Coupon template table (usage threshold and discount amount) |
-| `coupon_user` | Coupon distribution record table |
-| `activity` | Promotion activity table |
-| `activity_movie` | Activity-movie association table |
-| `refundpolicy` | Refund policy table (refund time limit and handling fee by movie) |
-| `refund_info` | Global refund time limit setting |
-| `history` | User consumption/recharge history table |
-| `movie_like` | User wishlist table |
+- **Password Encryption:** BCrypt algorithm for secure password storage
+- **Access Control:** Session-based login interception
+- **Data Protection:** UserVO excludes sensitive information
+- **SQL Injection Prevention:** MyBatis parameterized queries
+
+---
+
+## Development Log
+
+- ✅ Completed user-side core features
+- ✅ Completed admin panel development
+- ✅ Implemented data visualization dashboard
+- ✅ Completed security audit and vulnerability fixes
+- ✅ Optimized page loading performance
 
 ---
 
 ## License
 
 This project is for learning and research purposes only.
+
+---
+
+<div align="center">
+
+**If this project helps you, please give it a Star!**
+
+[![Star History](https://api.star-history.com/svg?repos=gurinalje/Movie-v2&type=Date)](https://star-history.com/#gurinalje/Movie-v2&Date)
+
+</div>
