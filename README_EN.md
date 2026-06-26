@@ -27,64 +27,6 @@ A full-stack online cinema ticket booking platform built with Vue 3 and Spring B
 
 ---
 
-## Screenshots
-
-### User Side
-
-<table>
-  <tr>
-    <td align="center"><b>Login Page</b></td>
-    <td align="center"><b>Homepage - Now Showing</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/login.png" width="400"></td>
-    <td><img src="assets/home.png" width="400"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Movie Details</b></td>
-    <td align="center"><b>Seat Selection</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/movie-detail-2.png" width="400"></td>
-    <td><img src="assets/seat-selection.png" width="400"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Payment</b></td>
-    <td align="center"><b>Order Management</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/payment.png" width="400"></td>
-    <td><img src="assets/order-management.png" width="400"></td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2"><b>VIP Membership Center</b></td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2"><img src="assets/vip-member.png" width="500"></td>
-  </tr>
-</table>
-
-### Admin Panel
-
-<table>
-  <tr>
-    <td align="center"><b>Movie Management</b></td>
-    <td align="center"><b>Hall Management</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/admin-movie.png" width="400"></td>
-    <td><img src="assets/admin-hall.png" width="400"></td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2"><b>Data Visualization Dashboard</b></td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2"><img src="assets/admin-statistics.png" width="600"></td>
-  </tr>
-</table>
-
----
-
 ## Core Features
 
 ### User Side
@@ -249,35 +191,90 @@ Access URL: http://localhost:5173
 ## Project Structure
 
 ```
-Movie-v2/
-├── movie/                          # Backend Spring Boot Project
-│   ├── src/main/java/
-│   │   ├── controller/            # Controller Layer
-│   │   ├── service/               # Business Logic Layer
-│   │   ├── mapper/                # Data Access Layer
-│   │   └── entity/                # Entity Classes
-│   └── sql/
-│       └── update.sql             # Database Script
+Online-Movie-Ticket-System/
+├── movie/                              # Backend Spring Boot Project
+│   ├── pom.xml                         # Maven Dependencies
+│   ├── .env                            # Environment Variables (DB config, not in repo)
+│   ├── sql/
+│   │   └── update.sql                  # Database Schema + Initial Data
+│   └── src/main/
+│       ├── java/com/example/cinema/
+│       │   ├── CinemaApplication.java  # Application Entry Point
+│       │   ├── config/
+│       │   │   └── InterceptorConfiguration.java  # Interceptor Config
+│       │   ├── interceptor/
+│       │   │   └── SessionInterceptor.java        # Login Interceptor
+│       │   ├── controller/             # ---- Controller Layer (API Entry) ----
+│       │   │   ├── user/
+│       │   │   │   └── AccountController.java     # Account (Login/Register/User Management)
+│       │   │   ├── management/
+│       │   │   │   ├── MovieController.java       # Movie Management
+│       │   │   │   ├── ScheduleController.java    # Schedule Management
+│       │   │   │   └── HallController.java        # Hall Management
+│       │   │   ├── sales/
+│       │   │   │   ├── TicketController.java      # Ticket (Purchase/Seat Selection/Refund)
+│       │   │   │   └── RefundController.java      # Refund Policy Management
+│       │   │   ├── promotion/
+│       │   │   │   ├── VIPCardController.java     # VIP Membership Card
+│       │   │   │   ├── CouponController.java      # Coupon
+│       │   │   │   └── ActivityController.java    # Promotion Activity
+│       │   │   └── statistics/
+│       │   │       └── StatisticsController.java  # Business Data Statistics
+│       │   ├── bl/                     # ---- Business Logic Layer Interface ----
+│       │   ├── blImpl/                 # ---- Business Logic Layer Implementation ----
+│       │   ├── data/                   # ---- Data Access Layer (MyBatis Mapper) ----
+│       │   ├── po/                     # ---- Database Entity Classes ----
+│       │   └── vo/                     # ---- View Objects / Form Objects ----
+│       └── resources/
+│           ├── application.yml         # Application Configuration
+│           ├── dataImpl/               # MyBatis XML Mapper Files
+│           ├── static/                 # Static Resources
+│           └── templates/              # Thymeleaf Templates
 │
-├── cinema-ui/                      # Frontend Vue 3 Project
+├── cinema-ui/                          # Frontend Vue 3 Project
+│   ├── package.json                    # Node Dependencies
+│   ├── vite.config.js                  # Vite Config (with proxy settings)
+│   ├── index.html                      # HTML Entry Point
 │   └── src/
-│       ├── views/                 # Page Components
-│       ├── components/            # Shared Components
-│       ├── router/                # Route Configuration
-│       ├── stores/                # Pinia State
-│       └── api/                   # API Encapsulation
+│       ├── main.js                     # Vue Application Entry
+│       ├── App.vue                     # Root Component
+│       ├── router/index.js             # Frontend Route Configuration
+│       ├── components/
+│       │   └── NavBar.vue              # Navigation Bar Component
+│       ├── layout/
+│       │   └── AdminLayout.vue         # Admin Dashboard Layout (Sidebar + Header)
+│       └── views/                      # ---- Page Components ----
+│           ├── Login.vue               # Login Page
+│           ├── Home.vue                # Home Page (Popular Movies)
+│           ├── Movie.vue               # Movie List
+│           ├── MovieDetail.vue         # Movie Details
+│           ├── MovieBuy.vue            # Seat Selection & Booking
+│           ├── UserBuy.vue             # User Orders
+│           ├── UserCost.vue            # Transaction History
+│           ├── UserInfo.vue            # Personal Information
+│           ├── UserMember.vue          # Membership Center
+│           ├── AdminMovie.vue          # [Admin] Movie Management
+│           ├── AdminSchedule.vue       # [Admin] Schedule Management
+│           ├── AdminCinema.vue         # [Admin] Hall Management
+│           ├── AdminPromotion.vue      # [Admin] Promotion Management
+│           ├── AdminVip.vue            # [Admin] VIP Management
+│           ├── AdminRefund.vue         # [Admin] Refund Policy
+│           ├── AdminStatistic.vue      # [Admin] Data Statistics
+│           └── AdminTicket.vue         # [Admin] Ticket Management
 │
-└── assets/                         # Project Screenshots
-    ├── login.png
-    ├── home.png
-    ├── movie-detail-2.png
-    ├── seat-selection.png
-    ├── payment.png
-    ├── order-management.png
-    ├── vip-member.png
-    ├── admin-movie.png
-    ├── admin-hall.png
-    └── admin-statistics.png
+├── assets/                              # Project Screenshots
+│   ├── login.png
+│   ├── home.png
+│   ├── movie-detail-2.png
+│   ├── seat-selection.png
+│   ├── payment.png
+│   ├── order-management.png
+│   ├── vip-member.png
+│   ├── admin-movie.png
+│   ├── admin-hall.png
+│   └── admin-statistics.png
+│
+└── SECURITY_REVIEW_REPORT.md           # Security Review Report
 ```
 
 ---

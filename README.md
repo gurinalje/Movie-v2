@@ -27,64 +27,6 @@
 
 ---
 
-## 项目截图
-
-### 用户端
-
-<table>
-  <tr>
-    <td align="center"><b>登录页面</b></td>
-    <td align="center"><b>首页 - 热门电影</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/login.png" width="400"></td>
-    <td><img src="assets/home.png" width="400"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>电影详情</b></td>
-    <td align="center"><b>选座购票</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/movie-detail-2.png" width="400"></td>
-    <td><img src="assets/seat-selection.png" width="400"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>支付页面</b></td>
-    <td align="center"><b>订单管理</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/payment.png" width="400"></td>
-    <td><img src="assets/order-management.png" width="400"></td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2"><b>VIP 会员中心</b></td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2"><img src="assets/vip-member.png" width="500"></td>
-  </tr>
-</table>
-
-### 管理后台
-
-<table>
-  <tr>
-    <td align="center"><b>电影管理</b></td>
-    <td align="center"><b>影厅管理</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/admin-movie.png" width="400"></td>
-    <td><img src="assets/admin-hall.png" width="400"></td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2"><b>数据可视化大屏</b></td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2"><img src="assets/admin-statistics.png" width="600"></td>
-  </tr>
-</table>
-
----
-
 ## 核心功能
 
 ### 用户端
@@ -249,35 +191,90 @@ npm run dev
 ## 项目结构
 
 ```
-Movie-v2/
-├── movie/                          # 后端 Spring Boot 项目
-│   ├── src/main/java/
-│   │   ├── controller/            # 控制器层
-│   │   ├── service/               # 业务逻辑层
-│   │   ├── mapper/                # 数据访问层
-│   │   └── entity/                # 实体类
-│   └── sql/
-│       └── update.sql             # 数据库脚本
+在线电影购票系统/
+├── movie/                              # 后端 Spring Boot 项目
+│   ├── pom.xml                         # Maven 依赖配置
+│   ├── .env                            # 环境变量（数据库配置，不入库）
+│   ├── sql/
+│   │   └── update.sql                  # 数据库建表 + 初始数据脚本
+│   └── src/main/
+│       ├── java/com/example/cinema/
+│       │   ├── CinemaApplication.java  # 启动类
+│       │   ├── config/
+│       │   │   └── InterceptorConfiguration.java  # 拦截器配置
+│       │   ├── interceptor/
+│       │   │   └── SessionInterceptor.java        # 登录拦截器
+│       │   ├── controller/             # ---- 控制器层（API 入口）----
+│       │   │   ├── user/
+│       │   │   │   └── AccountController.java     # 账户（登录/注册/用户管理）
+│       │   │   ├── management/
+│       │   │   │   ├── MovieController.java       # 电影管理
+│       │   │   │   ├── ScheduleController.java    # 排片管理
+│       │   │   │   └── HallController.java        # 影厅管理
+│       │   │   ├── sales/
+│       │   │   │   ├── TicketController.java      # 票务（购票/选座/退票）
+│       │   │   │   └── RefundController.java      # 退票策略管理
+│       │   │   ├── promotion/
+│       │   │   │   ├── VIPCardController.java     # VIP 会员卡
+│       │   │   │   ├── CouponController.java      # 优惠券
+│       │   │   │   └── ActivityController.java    # 促销活动
+│       │   │   └── statistics/
+│       │   │       └── StatisticsController.java  # 经营数据统计
+│       │   ├── bl/                     # ---- 业务逻辑层接口 ----
+│       │   ├── blImpl/                 # ---- 业务逻辑层实现 ----
+│       │   ├── data/                   # ---- 数据访问层（MyBatis Mapper）----
+│       │   ├── po/                     # ---- 数据库实体类 ----
+│       │   └── vo/                     # ---- 视图对象 / 表单对象 ----
+│       └── resources/
+│           ├── application.yml         # 应用配置
+│           ├── dataImpl/               # MyBatis XML 映射文件
+│           ├── static/                 # 静态资源
+│           └── templates/              # Thymeleaf 模板
 │
-├── cinema-ui/                      # 前端 Vue 3 项目
+├── cinema-ui/                          # 前端 Vue 3 项目
+│   ├── package.json                    # Node 依赖配置
+│   ├── vite.config.js                  # Vite 配置（含代理设置）
+│   ├── index.html                      # HTML 入口
 │   └── src/
-│       ├── views/                 # 页面组件
-│       ├── components/            # 公共组件
-│       ├── router/                # 路由配置
-│       ├── stores/                # Pinia 状态
-│       └── api/                   # 接口封装
+│       ├── main.js                     # Vue 应用入口
+│       ├── App.vue                     # 根组件
+│       ├── router/index.js             # 前端路由配置
+│       ├── components/
+│       │   └── NavBar.vue              # 导航栏组件
+│       ├── layout/
+│       │   └── AdminLayout.vue         # 管理后台布局（侧边栏 + 顶栏）
+│       └── views/                      # ---- 页面组件 ----
+│           ├── Login.vue               # 登录页
+│           ├── Home.vue                # 首页（热门电影）
+│           ├── Movie.vue               # 电影列表
+│           ├── MovieDetail.vue         # 电影详情
+│           ├── MovieBuy.vue            # 选座购票
+│           ├── UserBuy.vue             # 用户订单
+│           ├── UserCost.vue            # 消费记录
+│           ├── UserInfo.vue            # 个人信息
+│           ├── UserMember.vue          # 会员中心
+│           ├── AdminMovie.vue          # [管理] 电影管理
+│           ├── AdminSchedule.vue       # [管理] 排片管理
+│           ├── AdminCinema.vue         # [管理] 影厅管理
+│           ├── AdminPromotion.vue      # [管理] 促销活动管理
+│           ├── AdminVip.vue            # [管理] VIP 管理
+│           ├── AdminRefund.vue         # [管理] 退票策略管理
+│           ├── AdminStatistic.vue      # [管理] 数据统计
+│           └── AdminTicket.vue         # [管理] 票务管理
 │
-└── assets/                         # 项目截图
-    ├── login.png
-    ├── home.png
-    ├── movie-detail-2.png
-    ├── seat-selection.png
-    ├── payment.png
-    ├── order-management.png
-    ├── vip-member.png
-    ├── admin-movie.png
-    ├── admin-hall.png
-    └── admin-statistics.png
+├── assets/                              # 项目截图
+│   ├── login.png
+│   ├── home.png
+│   ├── movie-detail-2.png
+│   ├── seat-selection.png
+│   ├── payment.png
+│   ├── order-management.png
+│   ├── vip-member.png
+│   ├── admin-movie.png
+│   ├── admin-hall.png
+│   └── admin-statistics.png
+│
+└── SECURITY_REVIEW_REPORT.md           # 安全审查报告
 ```
 
 ---
